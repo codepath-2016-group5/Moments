@@ -18,3 +18,8 @@ The following **required** functionality is completed:
  * [ ] Profile view includes that user's timeline
 * [ ] User can [infinitely paginate](http://guides.codepath.com/android/Endless-Scrolling-with-AdapterViews-and-RecyclerView) any of these timelines (home, mentions, user) by scrolling to the bottom
 
+<img src='./image1.JPG' />
+<img src='./image2.JPG' />
+<img src='./image3.JPG' />
+<img src='./image4.JPG' />
+

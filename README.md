@@ -7,16 +7,18 @@ This app helps you in finding your friend/relative if they happen to be in same 
 
 The following **required** functionality is completed:
 
-* [ ] The app includes **all required user stories** from Week 3 Twitter Client
-* [ ] User can **switch between Timeline and Mention views using tabs**
-  * [ ] User can view their home timeline tweets.
-  * [ ] User can view the recent mentions of their username.
-* [ ] User can navigate to **view their own profile**
-  * [ ] User can see picture, tagline, # of followers, # of following, and tweets on their profile.
-* [ ] User can **click on the profile image** in any tweet to see **another user's** profile.
- * [ ] User can see picture, tagline, # of followers, # of following, and tweets of clicked user.
- * [ ] Profile view includes that user's timeline
-* [ ] User can [infinitely paginate](http://guides.codepath.com/android/Endless-Scrolling-with-AdapterViews-and-RecyclerView) any of these timelines (home, mentions, user) by scrolling to the bottom
+* [ ] The app includes **all required user stories**
+* [ ] User can **login via Facebook/Twitter**
+  * [ ] User gets authenticated via FB/Twitter
+  * [ ] Use **location service**
+* [ ] User can **search for activities**
+  * [ ] User can see list of events at near by location
+* [ ] User can change **settings** in settings menu.
+ * [ ] Include settings like location, events etc
+* [ ] User can create events
+ * [ ] Events creation include location, type, name, time
+* [ ] User can create visibility
+ * [ ] Visibility takes location from location service and time as current time
 
 <img src='./image1.JPG' />
 <img src='./image2.JPG' />

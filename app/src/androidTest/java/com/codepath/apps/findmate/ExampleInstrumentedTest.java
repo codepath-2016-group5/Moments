@@ -1,4 +1,4 @@
-package com.codepath.android;
+package com.codepath.apps.findmate;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

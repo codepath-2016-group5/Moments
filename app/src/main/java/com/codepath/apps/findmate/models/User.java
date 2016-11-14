@@ -16,7 +16,6 @@ public class User extends ParseObject implements Parcelable {
 
 
     public static final String ID_KEY = "id";
-
     public static final String NAME_KEY = "name";
 
     public static final String EMAIL = "email";

@@ -1,4 +1,4 @@
-package com.codepath.apps.findmate;
+package com.codepath.apps.findmate.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.Event;
 import com.squareup.picasso.Picasso;
 

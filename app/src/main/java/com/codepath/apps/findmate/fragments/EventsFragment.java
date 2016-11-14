@@ -1,14 +1,18 @@
-package com.codepath.apps.findmate;
+package com.codepath.apps.findmate.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.codepath.apps.findmate.adapters.EventsAdapter;
+import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.Event;
 
 import java.util.ArrayList;
@@ -38,6 +42,15 @@ public class EventsFragment extends Fragment {
         adapter = new EventsAdapter(getActivity(), events);
         rvEvents.setAdapter(adapter);
         rvEvents.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        //attach onclick listener
+        FloatingActionButton fabAddEvent = (FloatingActionButton)view.findViewById(R.id.fabAddEvent);
+        fabAddEvent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showAddEventFragment();
+            }
+        });
     }
 
     public void onCreateEvent(Event event) {
@@ -71,4 +84,14 @@ public class EventsFragment extends Fragment {
         events.add(sport);
         return events;
     }
+
+    private void showAddEventFragment() {
+        FragmentManager fm = getFragmentManager();
+        AddEventFragment addEventFragment = AddEventFragment.newInstance();
+        addEventFragment.show(fm, "fragment_add_event");
+    }
+
+
+
+
 }

@@ -1,4 +1,4 @@
-package com.codepath.apps.findmate;
+package com.codepath.apps.findmate.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.Event;
 
 public class AddEventFragment extends DialogFragment {
@@ -90,9 +91,7 @@ public class AddEventFragment extends DialogFragment {
             Event event = new Event();
             event.setName(etEventName.getText().toString());
             event.setDetails(etDetails.getText().toString());
-
             listener.onCreate(event);
-
             AddEventFragment.this.dismiss();
         }
     }

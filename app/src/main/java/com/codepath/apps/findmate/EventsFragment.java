@@ -12,12 +12,14 @@ import android.view.ViewGroup;
 import com.codepath.apps.findmate.models.Event;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 public class EventsFragment extends Fragment {
 
-    private List<Event> events;;
+    private List<Event> events;
+    private EventsAdapter adapter;
 
     @Nullable
     @Override
@@ -33,9 +35,18 @@ public class EventsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         RecyclerView rvEvents = (RecyclerView) view.findViewById(R.id.rvEvents);
-        EventsAdapter adapter = new EventsAdapter(getActivity(), events);
+        adapter = new EventsAdapter(getActivity(), events);
         rvEvents.setAdapter(adapter);
         rvEvents.setLayoutManager(new LinearLayoutManager(getActivity()));
+    }
+
+    public void onCreateEvent(Event event) {
+        // add to head of events
+        Collections.reverse(events);
+        events.add(event);
+        Collections.reverse(events);
+
+        adapter.notifyDataSetChanged();
     }
 
     private static List<Event> createEventsList() {

@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder> {
@@ -40,10 +41,13 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
         if (event.getPictureUrl() != null) {
             Picasso.with(context).load(event.getPictureUrl()).into(holder.ivEventImage);
+        } else {
+            holder.ivEventImage.setImageResource(0);
         }
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(event.getStart());
+        Date start = event.getStart() == null ? new Date() : event.getStart();
+        calendar.setTime(start);
         holder.tvEventDay.setText(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)));
         holder.tvEventMonth.setText(new SimpleDateFormat("MMM").format(calendar.getTime()));
 

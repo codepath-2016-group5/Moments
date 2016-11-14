@@ -39,4 +39,9 @@ dependencies {
     //for parse
     compile 'com.parse:parse-android:1.13.1'
     compile 'com.parse:parseinterceptors:0.0.2'
+
+    compile 'com.android.support:support-v13:25.0.0'
+    compile 'com.android.support:recyclerview-v7:25.0.0'
+
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

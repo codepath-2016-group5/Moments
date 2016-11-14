@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Android</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
 
     <string name="event_name_hint">Event name</string>
     <string name="details_hint">Details</string>
@@ -9,5 +12,8 @@
 
     <string name="cancel">Cancel</string>
     <string name="create">Create</string>
+    <string name="events_fragment">Events</string>
+    <string name="profile_fragment">Profile</string>
+    <string name="settings_fragment">Settings</string>
 
 </resources>

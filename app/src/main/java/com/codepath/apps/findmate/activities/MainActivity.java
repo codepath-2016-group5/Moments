@@ -1,5 +1,6 @@
 package com.codepath.apps.findmate.activities;
 
+import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -10,9 +11,9 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
-import com.codepath.apps.findmate.fragments.AddEventFragment;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.databinding.ActivityMainBinding;
+import com.codepath.apps.findmate.fragments.AddEventFragment;
 import com.codepath.apps.findmate.fragments.EventsFragment;
 import com.codepath.apps.findmate.fragments.ProfileFragment;
 import com.codepath.apps.findmate.fragments.SettingsFragment;
@@ -23,6 +24,8 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
     ActivityMainBinding binding;
     DrawerLayout mDrawer;
     NavigationView nvDrawer;
+    private ActionBarDrawerToggle mDrawerToggle;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +35,10 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
         setSupportActionBar(binding.tbInclude.toolbar);
         mDrawer = binding.drawerLayout;
 
+        mDrawerToggle = setupDrawerToggle();
+
         // Tie DrawerLayout events to the ActionBarToggle
-        mDrawer.addDrawerListener(setupDrawerToggle());
+        mDrawer.addDrawerListener(mDrawerToggle);
 
         nvDrawer = binding.nvView;
 
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
         setupDrawerContent(nvDrawer);
 
         nvDrawer.getMenu().getItem(0).setChecked(true);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.flContent, new EventsFragment()).commit();
         setTitle(R.string.events_fragment);
@@ -72,13 +78,22 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
         Class fragmentClass;
         switch(menuItem.getItemId()) {
             case R.id.nav_events_fragment:
-                fragmentClass = EventsFragment.class;
+               /* mDrawerToggle.setDrawerIndicatorEnabled(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeButtonEnabled(true);
+       */         fragmentClass = EventsFragment.class;
                 break;
             case R.id.nav_profile_fragment:
+                mDrawerToggle.setDrawerIndicatorEnabled(false);
+              /*  getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeButtonEnabled(true); */
                 fragmentClass = ProfileFragment.class;
-                break;
+               break;
             case R.id.nav_settings_fragment:
-                fragmentClass = SettingsFragment.class;
+            /*    mDrawerToggle.setDrawerIndicatorEnabled(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeButtonEnabled(true);
+       */         fragmentClass = SettingsFragment.class;
                 break;
              default:
                  fragmentClass = EventsFragment.class;
@@ -108,5 +123,36 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
                ((EventsFragment) f).onCreateEvent(event);
             }
         }
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+       /* switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }*/
+        // Pass the event to ActionBarDrawerToggle
+        // If it returns true, then it has handled
+        // the nav drawer indicator touch event
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle your other action bar items...
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 }

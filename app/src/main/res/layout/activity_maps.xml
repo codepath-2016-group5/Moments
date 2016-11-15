@@ -6,18 +6,25 @@
     android:layout_height="match_parent"
     tools:context="com.codepath.apps.findmate.activities.MapsActivity">
 
-    <android.support.v7.widget.Toolbar
-        android:minHeight="?attr/actionBarSize"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:titleTextColor="@android:color/white"
-        android:fitsSystemWindows="true"
-        android:background="@color/colorBG"
-        android:elevation="4dp"
+
+    <include
         android:id="@+id/maps_toolbar"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
-    </android.support.v7.widget.Toolbar>
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:minHeight="?attr/actionBarSize"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="?attr/actionBarSize"-->
+        <!--app:titleTextColor="@android:color/white"-->
+        <!--android:fitsSystemWindows="true"-->
+        <!--android:background="@color/colorBG"-->
+        <!--android:elevation="4dp"-->
+        <!--android:id="@+id/maps_toolbar"-->
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--xmlns:app="http://schemas.android.com/apk/res-auto">-->
+    <!--</android.support.v7.widget.Toolbar>-->
 
     <fragment
         android:id="@+id/map"

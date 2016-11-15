@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codepath.apps.findmate">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-
     <permission android:name="android.permission.ACCESS_FINE_LOCATION" android:protectionLevel="dangerous"/>
     <permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:protectionLevel="dangerous"/>
 
@@ -82,9 +80,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.MapsActivity"></activity>
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="e44be850e78143ac660a2a59c411bd7a09706e26"/>
     </application>
 
 </manifest>

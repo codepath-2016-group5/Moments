@@ -26,6 +26,22 @@ public class User extends ParseObject implements Parcelable {
 
     public static final String FRIENDS ="friends";
 
+    public String getIdKey() {
+        return getString(ID_KEY);
+    }
+
+    public void setIdKey(String idKey) {
+        put(ID_KEY, idKey);
+    }
+
+    public String getName() {
+        return getString(NAME_KEY);
+    }
+
+    public void setName(String name) {
+        put(NAME_KEY, name);
+    }
+
     public String getEmail() {
         return getString(EMAIL);
     }

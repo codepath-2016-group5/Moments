@@ -118,7 +118,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToMaps(User user) {
-        Intent intent = new Intent(this, MapsActivity.class);
+        //Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("User", user);
         startActivity(intent);
     }

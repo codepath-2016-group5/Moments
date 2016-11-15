@@ -8,11 +8,11 @@ This app helps you in finding your friend/relative if they happen to be in same 
 The following **required** functionality is completed:
 
 * [ ] The app includes **all required user stories**
-* [ ] User can **login via Facebook/Twitter**
-  * [ ] User gets authenticated via FB/Twitter
+* [x] User can **login via Facebook/Twitter**
+  * [x] User gets authenticated via FB/Twitter
   * [ ] Use **location service**
 * [ ] User can **search for activities**
-  * [ ] User can see list of events at near by location
+  * [x] User can see list of events at near by location
 * [ ] User can change **settings** in settings menu.
  * [ ] Include settings like location, events etc
 * [ ] User can create events

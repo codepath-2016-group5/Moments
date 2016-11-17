@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.User;
@@ -118,8 +117,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToMaps(User user) {
-        //Intent intent = new Intent(this, MapsActivity.class);
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, MapsActivity.class);
+       // Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("User", user);
         startActivity(intent);
     }

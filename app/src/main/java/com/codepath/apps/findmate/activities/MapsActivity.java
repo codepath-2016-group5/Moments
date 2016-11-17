@@ -5,21 +5,24 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.databinding.DataBindingUtil;
 import android.location.Location;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
 import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
+import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
 import com.codepath.apps.findmate.models.User;
+import com.facebook.share.model.AppInviteContent;
+import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -48,6 +51,8 @@ public class MapsActivity extends AppCompatActivity implements
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
+    //binding object
+    private ActivityMapsBinding binding;
 
     /*
      * Define a request code to send to Google Play services This code is
@@ -58,9 +63,10 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
+        setContentView(binding.getRoot());
 
-        User user = (User)savedInstanceState.getParcelable("User");
+        User user  = getIntent().getParcelableExtra("User");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
 
@@ -82,6 +88,8 @@ public class MapsActivity extends AppCompatActivity implements
             Toast.makeText(this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
         }
 
+        //setup on onclick event for invite friends
+        binding.llInvite.setOnClickListener(mOnClickListener);
     }
 
     @Override
@@ -96,7 +104,7 @@ public class MapsActivity extends AppCompatActivity implements
         map = googleMap;
         if (map != null) {
             // Map is ready
-            Toast.makeText(this, "Map Fragment was loaded properly!", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "Map Fragment was loaded properly!", Toast.LENGTH_SHORT).show();
             MapsActivityPermissionsDispatcher.getMyLocationWithCheck(this);
 //            map.setOnMapLongClickListener(this);
 //            map.setOnMarkerDragListener(this);
@@ -162,7 +170,7 @@ public class MapsActivity extends AppCompatActivity implements
         // Display the connection status
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location != null) {
-            Toast.makeText(this, "GPS location was found!", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "GPS location was found!", Toast.LENGTH_SHORT).show();
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
             map.animateCamera(cameraUpdate);
@@ -186,8 +194,7 @@ public class MapsActivity extends AppCompatActivity implements
         String msg = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-
+        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     /*
@@ -304,4 +311,23 @@ public class MapsActivity extends AppCompatActivity implements
             return mDialog;
         }
     }
+
+    //define onClickListener for invite members
+    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            //open facebook app invite dialog.
+            if (AppInviteDialog.canShow()) {
+                AppInviteContent content = new AppInviteContent.Builder()
+                        .setApplinkUrl(getString(R.string.fb_app_link))
+                        .setPreviewImageUrl(getString(R.string.fb_image_preview_url))
+                        .build();
+                AppInviteDialog.show(MapsActivity.this, content);
+            }
+        }
+
+    };
+
+
+
 }

@@ -1,23 +1,44 @@
 package com.codepath.apps.findmate.models;
 
+import com.facebook.AccessToken;
 import com.parse.ParseClassName;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.List;
+
+import static android.R.attr.name;
 
 @ParseClassName("User")
 public class User extends ParseObject implements Serializable {
 
-    private static final String NAME_KEY = "name";
-    private static final String EMAIL = "email";
-    private static final String FULL_NAME = "full_name";
-    private static final String FB_ID = "fb_id";
-    private static final String FRIENDS ="friends";
-    private static final String LOCATION = "location";
+    public static final String NAME_KEY = "name";
+    public static final String EMAIL = "email";
+    public static final String FULL_NAME = "full_name";
+    public static final String FB_ID = "fb_id";
+    public static final String FRIENDS ="friends";
+    public static final String LOCATION = "location";
 
     public User() {
+        super();
+    }
+
+    public static User fromJSONObject(AccessToken accessToken, JSONObject object) throws JSONException {
+        User user = new User();
+
+        String email = object.getString("email");
+        String name = object.getString("name"); // 01/31/1980 format
+
+        user.setFullName(name);
+        user.setName(name);
+        user.setEmail(email);
+        user.setFbId(accessToken.getUserId());
+
+        return user;
     }
 
     public String getName() {

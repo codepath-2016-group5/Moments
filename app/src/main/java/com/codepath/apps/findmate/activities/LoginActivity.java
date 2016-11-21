@@ -18,12 +18,16 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.parse.ParseException;
+import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 import org.json.JSONObject;
 
-public class LoginActivity extends AppCompatActivity {
+import java.util.List;
 
+import static android.R.attr.name;
+
+public class LoginActivity extends AppCompatActivity {
 
     CallbackManager callbackManager;
     LoginButton loginButton;
@@ -44,13 +48,13 @@ public class LoginActivity extends AppCompatActivity {
         AccessToken accesstoken = AccessToken.getCurrentAccessToken();
 
         if (accesstoken != null && !accesstoken.getPermissions().isEmpty()) {
-            getUserDetails(accesstoken);
+            getUserDetails(accesstoken, true);
         } else {
             // Callback registration
             loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
-                    getUserDetails(loginResult.getAccessToken());
+                    getUserDetails(loginResult.getAccessToken(), false);
                 }
 
                 @Override
@@ -73,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void getUserDetails(final AccessToken accessToken) {
+    private void getUserDetails(final AccessToken accessToken, final boolean alreadyExists) {
         final Bundle parameters = new Bundle();
         parameters.putString("fields", "id,name,email,gender,birthday,friends");
 
@@ -85,37 +89,40 @@ public class LoginActivity extends AppCompatActivity {
                         Log.v("LoginActivity", response.toString());
 
                         try {
-                            String email = object.getString("email");
-
-                            String name = object.getString("name"); // 01/31/1980 format
-                            System.out.println("*************" + email + name);
-
-                            final User user = new User();
-                            user.setFullName(name);
-                            user.setName(name);
-                            user.setEmail(email);
-                            user.setFbId(accessToken.getUserId());
-                            user.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    if (e == null) {
-                                        goToMaps(user.getObjectId());
-                                    } else {
-                                        Toast.makeText(LoginActivity.this,
-                                                "Failed to save user", Toast.LENGTH_LONG).show();
-                                    }
+                            final User user = User.fromJSONObject(accessToken, object);
+                            if (!alreadyExists) {
+                                saveUserAndGoToMaps(user);
+                            } else {
+                                List<User> users = ParseQuery.getQuery(User.class)
+                                        .whereEqualTo(User.FB_ID, accessToken.getUserId()).find();
+                                if (users.isEmpty()) {
+                                    saveUserAndGoToMaps(user);
+                                } else {
+                                    goToMaps(users.get(0).getObjectId());
                                 }
-                            });
-
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                     }
                 });
 
         request.setParameters(parameters);
         request.executeAsync();
+    }
+
+    private void saveUserAndGoToMaps(final User user) {
+        user.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    goToMaps(user.getObjectId());
+                } else {
+                    Toast.makeText(LoginActivity.this,
+                            "Failed to save user", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     private void goToMaps(String userId) {

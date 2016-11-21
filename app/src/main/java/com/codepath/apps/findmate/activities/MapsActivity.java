@@ -10,11 +10,13 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -58,12 +60,16 @@ public class MapsActivity extends AppCompatActivity implements
 
     private User user;
 
+    private SwitchCompat switchLocation;
     private SupportMapFragment mapFragment;
     private GoogleMap map;
+
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
+
     //binding object
     private ActivityMapsBinding binding;
 
@@ -104,8 +110,11 @@ public class MapsActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_home, menu);
-        return super.onCreateOptionsMenu(menu);
 
+        MenuItem miLocation = menu.findItem(R.id.miLocation);
+        switchLocation = (SwitchCompat) miLocation.getActionView().findViewById(R.id.switchLocation);
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -207,10 +216,19 @@ public class MapsActivity extends AppCompatActivity implements
         user.fetchIfNeededInBackground(new GetCallback<User>() {
             @Override
             public void done(User object, ParseException e) {
-                user.setLocation(new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
-                user.saveInBackground();
+                publishLocation(location);
             }
         });
+    }
+
+    private void publishLocation(Location location) {
+        // do not publish location when switch is disabled
+        if (!switchLocation.isChecked()) {
+            return;
+        }
+
+        user.setLocation(new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
+        user.saveInBackground();
     }
 
     /*
@@ -285,7 +303,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     /*
      * Called when the Activity becomes visible.
-    */
+     */
     @Override
     protected void onStart() {
         super.onStart();

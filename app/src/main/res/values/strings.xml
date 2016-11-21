@@ -16,6 +16,8 @@
     <string name="profile_fragment">Profile</string>
     <string name="settings_fragment">Settings</string>
 
+    <string name="share_location">Share location</string>
+
     <string name="facebook_app_id">1192117680855184</string>
     <string name="fb_login_protocol_scheme">fb1192117680855184</string>
     <string name="fb_app_link">https://fb.me/1192206584179627</string>

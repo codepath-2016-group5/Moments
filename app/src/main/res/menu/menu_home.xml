@@ -2,9 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_settings" android:title="@string/settings_fragment"
+    <item
+        android:id="@+id/miLocation"
+        android:title="@string/share_location"
+        app:showAsAction="always"
+        app:actionLayout="@layout/toolbar_switch"/>
+
+    <item
+        android:id="@+id/miSettings"
+        android:title="@string/settings_fragment"
         android:icon="@drawable/settings"
         android:orderInCategory="100"
         app:showAsAction="ifRoom|collapseActionView"/>
-
 </menu>

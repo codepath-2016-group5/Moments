@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.User;
@@ -43,14 +44,13 @@ public class LoginActivity extends AppCompatActivity {
         AccessToken accesstoken = AccessToken.getCurrentAccessToken();
 
         if (accesstoken != null && !accesstoken.getPermissions().isEmpty()) {
-            getUserDetails(accesstoken, true);
+            getUserDetails(accesstoken);
         } else {
-
             // Callback registration
             loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
-                    getUserDetails(loginResult.getAccessToken(), false);
+                    getUserDetails(loginResult.getAccessToken());
                 }
 
                 @Override
@@ -73,9 +73,9 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void getUserDetails(final AccessToken accessToken, final boolean alreadyExists) {
+    private void getUserDetails(final AccessToken accessToken) {
         final Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,name,email,gender,birthday, friends");
+        parameters.putString("fields", "id,name,email,gender,birthday,friends");
 
         GraphRequest request = GraphRequest.newMeRequest(
                 accessToken,
@@ -90,21 +90,23 @@ public class LoginActivity extends AppCompatActivity {
                             String name = object.getString("name"); // 01/31/1980 format
                             System.out.println("*************" + email + name);
 
-                            User user = new User();
+                            final User user = new User();
                             user.setFullName(name);
                             user.setName(name);
                             user.setEmail(email);
                             user.setFbId(accessToken.getUserId());
-                            if(!alreadyExists) {
-                                user.saveInBackground(new SaveCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-
+                            user.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if (e == null) {
+                                        goToMaps(user.getObjectId());
+                                    } else {
+                                        Toast.makeText(LoginActivity.this,
+                                                "Failed to save user", Toast.LENGTH_LONG).show();
                                     }
-                                });
-                            }
+                                }
+                            });
 
-                            goToMaps(user);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -116,10 +118,9 @@ public class LoginActivity extends AppCompatActivity {
         request.executeAsync();
     }
 
-    private void goToMaps(User user) {
+    private void goToMaps(String userId) {
         Intent intent = new Intent(this, MapsActivity.class);
-       // Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("User", user);
+        intent.putExtra(MapsActivity.USER_ID_EXTRA, userId);
         startActivity(intent);
     }
 }

@@ -1,37 +1,23 @@
 package com.codepath.apps.findmate.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.parse.ParseClassName;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 
+import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by sdevired on 11/9/16.
- */
 @ParseClassName("User")
-public class User extends ParseObject implements Parcelable {
+public class User extends ParseObject implements Serializable {
 
+    private static final String NAME_KEY = "name";
+    private static final String EMAIL = "email";
+    private static final String FULL_NAME = "full_name";
+    private static final String FB_ID = "fb_id";
+    private static final String FRIENDS ="friends";
+    private static final String LOCATION = "location";
 
-    public static final String ID_KEY = "id";
-    public static final String NAME_KEY = "name";
-
-    public static final String EMAIL = "email";
-
-    public static final String FULL_NAME = "full_name";
-
-    public static final String FB_ID = "fb_id";
-
-    public static final String FRIENDS ="friends";
-
-    public String getIdKey() {
-        return getString(ID_KEY);
-    }
-
-    public void setIdKey(String idKey) {
-        put(ID_KEY, idKey);
+    public User() {
     }
 
     public String getName() {
@@ -74,31 +60,11 @@ public class User extends ParseObject implements Parcelable {
         put(FRIENDS, friends);
     }
 
-
-    @Override
-    public int describeContents() {
-        return 0;
+    public ParseGeoPoint getLocation() {
+        return getParseGeoPoint(LOCATION);
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void setLocation(ParseGeoPoint location) {
+        put(LOCATION, location);
     }
-
-    public User() {
-    }
-
-    protected User(Parcel in) {
-    }
-
-    public static final Creator<User> CREATOR = new Creator<User>() {
-        @Override
-        public User createFromParcel(Parcel source) {
-            return new User(source);
-        }
-
-        @Override
-        public User[] newArray(int size) {
-            return new User[size];
-        }
-    };
 }

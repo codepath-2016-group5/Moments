@@ -35,6 +35,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
@@ -45,6 +49,15 @@ public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    public static final String USER_ID_EXTRA = "userId";
+    /*
+     * Define a request code to send to Google Play services This code is
+     * returned in Activity.onActivityResult
+     */
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
+    private User user;
+
     private SupportMapFragment mapFragment;
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
@@ -54,22 +67,17 @@ public class MapsActivity extends AppCompatActivity implements
     //binding object
     private ActivityMapsBinding binding;
 
-    /*
-     * Define a request code to send to Google Play services This code is
-     * returned in Activity.onActivityResult
-     */
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
         setContentView(binding.getRoot());
 
-        User user  = getIntent().getParcelableExtra("User");
+        String userId = getIntent().getStringExtra(USER_ID_EXTRA);
+        user = ParseObject.createWithoutData(User.class, userId);
+        user.fetchIfNeededInBackground();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
-
         setSupportActionBar(toolbar);
 
         if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
@@ -104,7 +112,7 @@ public class MapsActivity extends AppCompatActivity implements
         map = googleMap;
         if (map != null) {
             // Map is ready
-           // Toast.makeText(this, "Map Fragment was loaded properly!", Toast.LENGTH_SHORT).show();
+//           Toast.makeText(this, "Map Fragment was loaded properly!", Toast.LENGTH_SHORT).show();
             MapsActivityPermissionsDispatcher.getMyLocationWithCheck(this);
 //            map.setOnMapLongClickListener(this);
 //            map.setOnMarkerDragListener(this);
@@ -189,12 +197,20 @@ public class MapsActivity extends AppCompatActivity implements
                 mLocationRequest, this);
     }
 
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(final Location location) {
         // Report to the UI that the location was updated
         String msg = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+        user.fetchIfNeededInBackground(new GetCallback<User>() {
+            @Override
+            public void done(User object, ParseException e) {
+                user.setLocation(new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
+                user.saveInBackground();
+            }
+        });
     }
 
     /*
@@ -325,9 +341,5 @@ public class MapsActivity extends AppCompatActivity implements
                 AppInviteDialog.show(MapsActivity.this, content);
             }
         }
-
     };
-
-
-
 }

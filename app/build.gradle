@@ -58,4 +58,6 @@ dependencies {
     compile 'com.github.hotchemi:permissionsdispatcher:2.2.0'
     compile 'com.google.maps.android:android-maps-utils:0.4+'
     apt 'com.github.hotchemi:permissionsdispatcher-processor:2.2.0'
+
+    compile 'com.afollestad.material-dialogs:core:0.9.1.0'
 }

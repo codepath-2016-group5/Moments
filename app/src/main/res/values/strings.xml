@@ -3,6 +3,7 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
+    <string name="empty"></string>
 
     <string name="event_name_hint">Event name</string>
     <string name="details_hint">Details</string>
@@ -25,5 +26,10 @@
     <string name="google_maps_api_key">AIzaSyBXij__CU-baV3FiJIi1WqS2dD0FiALtco</string>
     <string name="gcm_sender_id">id:761078236734</string>
 
-    <string name="invite">Invite New Members</string>
+    <string name="invite">Invite New Members to App</string>
+
+    <string name="create_group">Create group</string>
+    <string name="join_group">Join group</string>
+    <string name="group_name">Group name</string>
+    <string name="invite_code">Invite code</string>
 </resources>

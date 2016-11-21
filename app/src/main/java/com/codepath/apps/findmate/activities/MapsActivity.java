@@ -8,6 +8,7 @@ import android.content.IntentSender;
 import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -20,8 +21,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
+import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
@@ -37,13 +41,20 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
+
+import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
+
+import static com.parse.ParseQuery.getQuery;
 
 @RuntimePermissions
 public class MapsActivity extends AppCompatActivity implements
@@ -103,7 +114,9 @@ public class MapsActivity extends AppCompatActivity implements
         }
 
         //setup on onclick event for invite friends
-        binding.llInvite.setOnClickListener(mOnClickListener);
+        binding.llCreateGroup.setOnClickListener(onCreateGroupListener);
+        binding.llJoinGroup.setOnClickListener(onJoinGroupListener);
+        binding.llInvite.setOnClickListener(onAppInviteListener);
     }
 
     @Override
@@ -347,7 +360,7 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     //define onClickListener for invite members
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+    private final View.OnClickListener onAppInviteListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             //open facebook app invite dialog.
@@ -358,6 +371,102 @@ public class MapsActivity extends AppCompatActivity implements
                         .build();
                 AppInviteDialog.show(MapsActivity.this, content);
             }
+        }
+    };
+
+    private final View.OnClickListener onCreateGroupListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            new MaterialDialog.Builder(MapsActivity.this)
+                    .title(R.string.create_group)
+                    .input(R.string.group_name, R.string.empty, false, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        }
+                    })
+                    .positiveText("Create")
+                    .negativeText("Cancel")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                            try {
+                                user.fetchIfNeeded(); // FIXME : avoid blocking
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            Group group = new Group()
+                                    .setName(dialog.getInputEditText().getText().toString())
+                                    .setInviteCode(Group.randomInviteCode())
+                                    .addMember(user);
+                            group.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    dialog.dismiss();
+                                }
+                            });
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
+        }
+    };
+
+    private final View.OnClickListener onJoinGroupListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            new MaterialDialog.Builder(MapsActivity.this)
+                    .title(R.string.join_group)
+                    .input(R.string.invite_code, R.string.empty, false, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        }
+                    })
+                    .positiveText("Join")
+                    .negativeText("Cancel")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                            try {
+                                user.fetchIfNeeded(); // FIXME : avoid blocking
+                                ParseQuery.getQuery(Group.class).whereEqualTo(Group.INVITE_KEY,
+                                        dialog.getInputEditText().getText().toString())
+                                        .findInBackground(new FindCallback<Group>() {
+                                    @Override
+                                    public void done(List<Group> groups, ParseException e) {
+                                        if (groups.isEmpty()) {
+                                            dialog.dismiss();
+                                            Toast.makeText(MapsActivity.this, "Could not find group",
+                                                    Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Group group = groups.get(0);
+                                            group.addMember(user);
+                                            group.saveInBackground(new SaveCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    dialog.dismiss();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
         }
     };
 }

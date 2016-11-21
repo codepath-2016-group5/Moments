@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
 import com.codepath.apps.findmate.models.Event;
+import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.parse.Parse;
 import com.parse.ParseObject;
@@ -20,6 +21,7 @@ public class FindMateApplication extends Application {
         //Register parse models
         ParseObject.registerSubclass(User.class);
         ParseObject.registerSubclass(Event.class);
+        ParseObject.registerSubclass(Group.class);
         ApplicationInfo app = null;
         try {
             app = getApplicationContext()
@@ -34,7 +36,5 @@ public class FindMateApplication extends Application {
                 .applicationId("MATEFIND") // should correspond to APP_ID env variable
                 .addNetworkInterceptor(new ParseLogInterceptor())
                 .server("https://findmate.herokuapp.com/parse/").build());
-
     }
-
 }

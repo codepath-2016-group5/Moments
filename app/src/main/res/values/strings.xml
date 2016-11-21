@@ -26,10 +26,11 @@
     <string name="google_maps_api_key">AIzaSyBXij__CU-baV3FiJIi1WqS2dD0FiALtco</string>
     <string name="gcm_sender_id">id:761078236734</string>
 
-    <string name="invite">Invite New Members to App</string>
+    <string name="invite">Invite new members to app</string>
 
     <string name="create_group">Create group</string>
     <string name="join_group">Join group</string>
     <string name="group_name">Group name</string>
     <string name="invite_code">Invite code</string>
+    <string name="invite_group">Invite new members to group</string>
 </resources>

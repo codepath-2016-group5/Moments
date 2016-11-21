@@ -77,24 +77,6 @@ public class MainActivity extends AppCompatActivity  implements AddEventFragment
         Fragment fragment = null;
         Class fragmentClass;
         switch(menuItem.getItemId()) {
-            case R.id.nav_events_fragment:
-               /* mDrawerToggle.setDrawerIndicatorEnabled(false);
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                getSupportActionBar().setHomeButtonEnabled(true);
-       */         fragmentClass = EventsFragment.class;
-                break;
-            case R.id.nav_profile_fragment:
-                mDrawerToggle.setDrawerIndicatorEnabled(false);
-              /*  getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                getSupportActionBar().setHomeButtonEnabled(true); */
-                fragmentClass = ProfileFragment.class;
-               break;
-            case R.id.nav_settings_fragment:
-            /*    mDrawerToggle.setDrawerIndicatorEnabled(false);
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                getSupportActionBar().setHomeButtonEnabled(true);
-       */         fragmentClass = SettingsFragment.class;
-                break;
              default:
                  fragmentClass = EventsFragment.class;
         }

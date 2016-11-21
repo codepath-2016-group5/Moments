@@ -1,13 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_events_fragment"
-            android:title="@string/events_fragment" />
-        <item
-            android:id="@+id/nav_profile_fragment"
-            android:title="@string/profile_fragment" />
-        <item
-            android:id="@+id/nav_settings_fragment"
-            android:title="@string/settings_fragment" />
     </group>
 </menu>

@@ -9,7 +9,11 @@ import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +29,9 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
+import com.codepath.apps.findmate.fragments.EventsFragment;
+import com.codepath.apps.findmate.fragments.ProfileFragment;
+import com.codepath.apps.findmate.fragments.SettingsFragment;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.facebook.share.model.AppInviteContent;
@@ -54,6 +61,7 @@ import java.util.List;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+import static com.codepath.apps.findmate.R.id.nvView;
 import static com.parse.ParseQuery.getQuery;
 
 @RuntimePermissions
@@ -69,11 +77,16 @@ public class MapsActivity extends AppCompatActivity implements
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
+    private String userId;
     private User user;
+    private List<Group> groups;
+    private int selectedGroupIndex;
 
     private SwitchCompat switchLocation;
     private SupportMapFragment mapFragment;
     private GoogleMap map;
+    private NavigationView nvView;
+    private DrawerLayout drawerLayout;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -90,9 +103,28 @@ public class MapsActivity extends AppCompatActivity implements
         binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
         setContentView(binding.getRoot());
 
-        String userId = getIntent().getStringExtra(USER_ID_EXTRA);
+        userId = getIntent().getStringExtra(USER_ID_EXTRA);
         user = ParseObject.createWithoutData(User.class, userId);
-        user.fetchIfNeededInBackground();
+
+        final FindCallback<Group> findCallback = new FindCallback<Group>() {
+            @Override
+            public void done(List<Group> groups, ParseException e) {
+                MapsActivity.this.groups = groups;
+                initializeView();
+            }
+        };
+
+        // fetch user and user's groups
+        if (user.isDataAvailable()) {
+            fetchGroups(findCallback);
+        } else {
+            user.fetchIfNeededInBackground(new GetCallback<ParseObject>() {
+                @Override
+                public void done(ParseObject object, ParseException e) {
+                    fetchGroups(findCallback);
+                }
+            });
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
@@ -112,11 +144,40 @@ public class MapsActivity extends AppCompatActivity implements
         } else {
             Toast.makeText(this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    private void initializeView() {
         //setup on onclick event for invite friends
+        binding.llInviteGroup.setOnClickListener(onInviteGroupListener);
         binding.llCreateGroup.setOnClickListener(onCreateGroupListener);
         binding.llJoinGroup.setOnClickListener(onJoinGroupListener);
         binding.llInvite.setOnClickListener(onAppInviteListener);
+
+        drawerLayout = binding.drawerLayout;
+        drawerLayout.addDrawerListener(new DrawerListener());
+        nvView = binding.nvView;
+        nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                selectDrawerItem(item);
+                return true;
+            }
+        });
+    }
+
+    private void selectDrawerItem(MenuItem menuItem) {
+        for (int index = 0; index < groups.size(); ++index) {
+            Group group = groups.get(index);
+            if (group.getName().equals(menuItem.getTitle().toString())) {
+                selectedGroupIndex = index;
+
+                menuItem.setChecked(true);
+                setTitle(menuItem.getTitle());
+
+                drawerLayout.closeDrawers();
+                return;
+            }
+        }
     }
 
     @Override
@@ -389,19 +450,14 @@ public class MapsActivity extends AppCompatActivity implements
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
-                            try {
-                                user.fetchIfNeeded(); // FIXME : avoid blocking
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-
-                            Group group = new Group()
+                            final Group group = new Group()
                                     .setName(dialog.getInputEditText().getText().toString())
                                     .setInviteCode(Group.randomInviteCode())
                                     .addMember(user);
                             group.saveInBackground(new SaveCallback() {
                                 @Override
                                 public void done(ParseException e) {
+                                    groups.add(group);
                                     dialog.dismiss();
                                 }
                             });
@@ -432,32 +488,26 @@ public class MapsActivity extends AppCompatActivity implements
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
-                            try {
-                                user.fetchIfNeeded(); // FIXME : avoid blocking
-                                ParseQuery.getQuery(Group.class).whereEqualTo(Group.INVITE_KEY,
-                                        dialog.getInputEditText().getText().toString())
-                                        .findInBackground(new FindCallback<Group>() {
-                                    @Override
-                                    public void done(List<Group> groups, ParseException e) {
-                                        if (groups.isEmpty()) {
-                                            dialog.dismiss();
-                                            Toast.makeText(MapsActivity.this, "Could not find group",
-                                                    Toast.LENGTH_LONG).show();
-                                        } else {
-                                            Group group = groups.get(0);
-                                            group.addMember(user);
-                                            group.saveInBackground(new SaveCallback() {
-                                                @Override
-                                                public void done(ParseException e) {
-                                                    dialog.dismiss();
-                                                }
-                                            });
-                                        }
+                            fetchGroupsByInviteCode(dialog.getInputEditText().getText().toString(), new FindCallback<Group>() {
+                                @Override
+                                public void done(List<Group> objects, ParseException e) {
+                                    if (groups.isEmpty()) {
+                                        dialog.dismiss();
+                                        Toast.makeText(MapsActivity.this, "Could not find group",
+                                                Toast.LENGTH_LONG).show();
+                                    } else {
+                                        final Group group = groups.get(0);
+                                        group.addMember(user);
+                                        group.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                groups.add(group);
+                                                dialog.dismiss();
+                                            }
+                                        });
                                     }
-                                });
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
+                                }
+                            });
                         }
                     })
                     .onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -469,4 +519,76 @@ public class MapsActivity extends AppCompatActivity implements
                     .show();
         }
     };
+
+    private final View.OnClickListener onInviteGroupListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            new MaterialDialog.Builder(MapsActivity.this)
+                    .title(R.string.invite_code)
+                    .content(getSelectedGroup().getInviteCode())
+                    .positiveText("Done")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
+        }
+    };
+
+    private class DrawerListener implements DrawerLayout.DrawerListener {
+        @Override
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+
+        }
+
+        @Override
+        public void onDrawerOpened(View drawerView) {
+            Menu menu = nvView.getMenu();
+            menu.clear();
+
+            for (Group group : groups) {
+                menu.add(group.getName());
+            }
+            menu.getItem(selectedGroupIndex).setChecked(true);
+        }
+
+        @Override
+        public void onDrawerClosed(View drawerView) {
+
+        }
+
+        @Override
+        public void onDrawerStateChanged(int newState) {
+
+        }
+    }
+
+    private void fetchGroups(FindCallback<Group> callback) {
+        fetchUserIfNeeded();
+        ParseQuery.getQuery(Group.class)
+                .whereEqualTo(Group.MEMBERS_KEY, user)
+                .findInBackground(callback);
+    }
+
+    private void fetchGroupsByInviteCode(String inviteCode, FindCallback<Group> callback) {
+        fetchUserIfNeeded();
+        ParseQuery.getQuery(Group.class)
+                .whereEqualTo(Group.INVITE_KEY, inviteCode)
+                .findInBackground(callback);
+    }
+
+    private void fetchUserIfNeeded() {
+        // FIXME : avoid blocking
+        try {
+            user.fetchIfNeeded();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Group getSelectedGroup() {
+        return groups.get(selectedGroupIndex);
+    }
 }

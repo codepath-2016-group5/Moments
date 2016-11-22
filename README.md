@@ -3,18 +3,20 @@
 We often visit places/sites and often don't post the location. Sometimes your friend or relative is in the same place and you didn't know about it.
 This app helps you in finding your friend/relative if they happen to be in same place at the same time, just by turning on your visibility.
 
+![Walkthrough](walkthrough.gif)
+
 ## User Stories
 
 The following **required** functionality is completed:
 
-* [ ] The app includes **all required user stories**
+* [x] The app includes **all required user stories**
 * [x] User can **login via Facebook/Twitter**
   * [x] User gets authenticated via FB/Twitter
   * [x] Use **location service**
-* [*] Invite Friends
-* [*] Create Groups
-* [x] User can create visibility
- * [x] Visibility takes location from location service and time as current time
+* [x] Invite Friends
+* [x] Create Groups
+* [x] Join Groups and Invite to Group
+* [x] User publishes location on map
 
 **Optional**
 * [ ] User can **search for activities**

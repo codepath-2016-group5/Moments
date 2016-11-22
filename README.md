@@ -10,15 +10,19 @@ The following **required** functionality is completed:
 * [ ] The app includes **all required user stories**
 * [x] User can **login via Facebook/Twitter**
   * [x] User gets authenticated via FB/Twitter
-  * [ ] Use **location service**
+  * [x] Use **location service**
+* [*] Invite Friends
+* [*] Create Groups
+* [x] User can create visibility
+ * [x] Visibility takes location from location service and time as current time
+
+**Optional**
 * [ ] User can **search for activities**
   * [x] User can see list of events at near by location
-* [ ] User can change **settings** in settings menu.
- * [ ] Include settings like location, events etc
 * [ ] User can create events
  * [ ] Events creation include location, type, name, time
-* [ ] User can create visibility
- * [ ] Visibility takes location from location service and time as current time
+* [ ] User can change **settings** in settings menu.
+ * [ ] Include settings like location, events etc
 
 <img src='./image1.JPG' />
 <img src='./image2.JPG' />

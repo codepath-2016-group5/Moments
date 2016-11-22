@@ -3,7 +3,6 @@ package com.codepath.apps.findmate.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.databinding.DataBindingUtil;
@@ -13,8 +12,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -30,11 +27,7 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
-import com.codepath.apps.findmate.database.ParseDBClient;
 import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
-import com.codepath.apps.findmate.fragments.EventsFragment;
-import com.codepath.apps.findmate.fragments.ProfileFragment;
-import com.codepath.apps.findmate.fragments.SettingsFragment;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.codepath.apps.findmate.utils.MapUtils;
@@ -63,14 +56,9 @@ import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 import java.util.List;
-import java.util.Map;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
-
-import static com.codepath.apps.findmate.R.id.nvView;
-import static com.parse.ParseConfig.getInBackground;
-import static com.parse.ParseQuery.getQuery;
 
 @RuntimePermissions
 public class MapsActivity extends AppCompatActivity implements
@@ -104,9 +92,6 @@ public class MapsActivity extends AppCompatActivity implements
 
     //binding object
     private ActivityMapsBinding binding;
-
-    private ParseDBClient dbClient = new ParseDBClient();
-
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();

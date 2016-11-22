@@ -213,9 +213,7 @@ public class MapsActivity extends AppCompatActivity implements
 //            map.setOnMapLongClickListener(this);
 //            map.setOnMarkerDragListener(this);
 
-            mapGroup(googleMap);
             handler.post(runnableCode);
-
         } else {
             Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
         }
@@ -507,12 +505,12 @@ public class MapsActivity extends AppCompatActivity implements
                             fetchGroupsByInviteCode(dialog.getInputEditText().getText().toString(), new FindCallback<Group>() {
                                 @Override
                                 public void done(List<Group> objects, ParseException e) {
-                                    if (groups.isEmpty()) {
+                                    if (objects.isEmpty()) {
                                         dialog.dismiss();
                                         Toast.makeText(MapsActivity.this, "Could not find group",
                                                 Toast.LENGTH_LONG).show();
                                     } else {
-                                        final Group group = groups.get(0);
+                                        final Group group = objects.get(0);
                                         group.addMember(user);
                                         group.saveInBackground(new SaveCallback() {
                                             @Override
@@ -609,6 +607,10 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     private void mapGroup(final GoogleMap map) {
+        if (groups.size() == 0) {
+            return;
+        }
+
         ParseQuery.getQuery(Group.class)
                 .include(Group.MEMBERS_KEY)
                 .getInBackground(getSelectedGroup().getObjectId(), new GetCallback<Group>() {

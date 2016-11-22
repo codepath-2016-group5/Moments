@@ -31,7 +31,7 @@ public class Group extends ParseObject {
         return getString(INVITE_KEY);
     }
 
-    public List<User> getMembersKey() {
+    public List<User> getMembers() {
         return getList(MEMBERS_KEY);
     }
 

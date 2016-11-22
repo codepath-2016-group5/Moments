@@ -9,6 +9,7 @@ import android.content.IntentSender;
 import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
@@ -68,6 +69,7 @@ import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
 import static com.codepath.apps.findmate.R.id.nvView;
+import static com.parse.ParseConfig.getInBackground;
 import static com.parse.ParseQuery.getQuery;
 
 @RuntimePermissions
@@ -105,7 +107,22 @@ public class MapsActivity extends AppCompatActivity implements
 
     private ParseDBClient dbClient = new ParseDBClient();
 
-    private Map<String, String> frindsMap;
+
+    // Create the Handler object (on the main thread by default)
+    Handler handler = new Handler();
+    // Define the code block to be executed
+    private Runnable runnableCode = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            Log.d("Handlers", "Called on main thread");
+
+            mapGroup(map);
+
+            // Repeat this the same runnable code block again another 2 seconds
+            handler.postDelayed(runnableCode, 2000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,8 +138,21 @@ public class MapsActivity extends AppCompatActivity implements
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
                 initializeView();
+
+                if (mapFragment != null) {
+                    mapFragment.getMapAsync(new OnMapReadyCallback() {
+                        @Override
+                        public void onMapReady(GoogleMap map) {
+                            loadMap(map);
+                        }
+                    });
+                } else {
+                    Toast.makeText(MapsActivity.this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
+                }
             }
         };
+
+        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
 
         // fetch user and user's groups
         if (user.isDataAvailable()) {
@@ -141,18 +171,6 @@ public class MapsActivity extends AppCompatActivity implements
 
         if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
             throw new IllegalStateException("You forgot to supply a Google Maps API key");
-        }
-
-        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(new OnMapReadyCallback() {
-                @Override
-                public void onMapReady(GoogleMap map) {
-                    loadMap(map);
-                }
-            });
-        } else {
-            Toast.makeText(this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -210,7 +228,8 @@ public class MapsActivity extends AppCompatActivity implements
 //            map.setOnMapLongClickListener(this);
 //            map.setOnMarkerDragListener(this);
 
-            mapFriendsLocation(googleMap);
+            mapGroup(googleMap);
+            handler.post(runnableCode);
 
         } else {
             Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
@@ -277,8 +296,6 @@ public class MapsActivity extends AppCompatActivity implements
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
             map.animateCamera(cameraUpdate);
-
-            dbClient.saveCurrentLocation(userId, location.getLatitude(), location.getLongitude());
         } else {
             Toast.makeText(this, "Current location was null, enable GPS on emulator!", Toast.LENGTH_SHORT).show();
         }
@@ -606,37 +623,22 @@ public class MapsActivity extends AppCompatActivity implements
         return groups.get(selectedGroupIndex);
     }
 
-    private void mapFriendsLocation(final GoogleMap googleMap) {
-        final Context that = this;
-
-        ParseQuery.getQuery(User.class)
-            .getInBackground(userId, new GetCallback<User>() {
-                public void done(User user, ParseException e) {
-                    if (e == null) {
-                        ParseGeoPoint lastLocation = user.getLocation();
-
-                        if(user.getFriends() == null || user.getFriends().isEmpty()) {
-                            return;
-                        }
-
-                        dbClient.getFriendsLocation(user.getFriends().keySet(), new FindCallback<User>() {
-                            @Override
-                            public void done(List<User> friends, ParseException e) {
-                                for(User frnd : friends) {
-                                    if(frnd.getLocation() != null) {
-                                        BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this, IconGenerator.STYLE_GREEN,frnd.getFullName());
-                                        MapUtils.addMarker(googleMap,new LatLng(frnd.getLocation().getLatitude(), frnd.getLocation().getLongitude()), frnd.getFullName(), frnd.getFullName(),icon);
-                                    }
-                                }
-
+    private void mapGroup(final GoogleMap map) {
+        ParseQuery.getQuery(Group.class)
+                .include(Group.MEMBERS_KEY)
+                .getInBackground(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
+                    @Override
+                    public void done(Group group, ParseException e) {
+                        map.clear();
+                        for (User member : group.getMembers()) {
+                            if(member.getLocation() != null) {
+                                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
+                                        IconGenerator.STYLE_GREEN, member.getFullName());
+                                MapUtils.addMarker(map,new LatLng(member.getLocation().getLatitude(),
+                                        member.getLocation().getLongitude()), member.getFullName(), member.getFullName(),icon);
                             }
-                        });
-
-                        if(lastLocation != null) {
-                            Toast.makeText(that, "My Last Known Location Lat:"+lastLocation.getLatitude() + " Long:"+lastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
                         }
                     }
-                }
-            });
+                });
     }
 }

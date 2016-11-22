@@ -3,6 +3,7 @@ package com.codepath.apps.findmate.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.databinding.DataBindingUtil;
@@ -28,12 +29,14 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
+import com.codepath.apps.findmate.database.ParseDBClient;
 import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
 import com.codepath.apps.findmate.fragments.EventsFragment;
 import com.codepath.apps.findmate.fragments.ProfileFragment;
 import com.codepath.apps.findmate.fragments.SettingsFragment;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
+import com.codepath.apps.findmate.utils.MapUtils;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
@@ -47,7 +50,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -57,6 +62,7 @@ import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 import java.util.List;
+import java.util.Map;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
@@ -96,6 +102,10 @@ public class MapsActivity extends AppCompatActivity implements
 
     //binding object
     private ActivityMapsBinding binding;
+
+    private ParseDBClient dbClient = new ParseDBClient();
+
+    private Map<String, String> frindsMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +210,8 @@ public class MapsActivity extends AppCompatActivity implements
 //            map.setOnMapLongClickListener(this);
 //            map.setOnMarkerDragListener(this);
 
+            mapFriendsLocation(googleMap);
+
         } else {
             Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
         }
@@ -265,6 +277,8 @@ public class MapsActivity extends AppCompatActivity implements
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
             map.animateCamera(cameraUpdate);
+
+            dbClient.saveCurrentLocation(userId, location.getLatitude(), location.getLongitude());
         } else {
             Toast.makeText(this, "Current location was null, enable GPS on emulator!", Toast.LENGTH_SHORT).show();
         }
@@ -590,5 +604,39 @@ public class MapsActivity extends AppCompatActivity implements
 
     private Group getSelectedGroup() {
         return groups.get(selectedGroupIndex);
+    }
+
+    private void mapFriendsLocation(final GoogleMap googleMap) {
+        final Context that = this;
+
+        ParseQuery.getQuery(User.class)
+            .getInBackground(userId, new GetCallback<User>() {
+                public void done(User user, ParseException e) {
+                    if (e == null) {
+                        ParseGeoPoint lastLocation = user.getLocation();
+
+                        if(user.getFriends() == null || user.getFriends().isEmpty()) {
+                            return;
+                        }
+
+                        dbClient.getFriendsLocation(user.getFriends().keySet(), new FindCallback<User>() {
+                            @Override
+                            public void done(List<User> friends, ParseException e) {
+                                for(User frnd : friends) {
+                                    if(frnd.getLocation() != null) {
+                                        BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this, IconGenerator.STYLE_GREEN,frnd.getFullName());
+                                        MapUtils.addMarker(googleMap,new LatLng(frnd.getLocation().getLatitude(), frnd.getLocation().getLongitude()), frnd.getFullName(), frnd.getFullName(),icon);
+                                    }
+                                }
+
+                            }
+                        });
+
+                        if(lastLocation != null) {
+                            Toast.makeText(that, "My Last Known Location Lat:"+lastLocation.getLatitude() + " Long:"+lastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
     }
 }

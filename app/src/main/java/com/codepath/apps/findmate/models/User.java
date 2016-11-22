@@ -5,11 +5,14 @@ import com.parse.ParseClassName;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.R.attr.name;
 
@@ -38,6 +41,19 @@ public class User extends ParseObject implements Serializable {
         user.setEmail(email);
         user.setFbId(accessToken.getUserId());
 
+        if(object.has("friends") && object.getJSONObject("friends").has("data")) {
+            JSONArray friends = object.getJSONObject("friends").getJSONArray("data");
+            Map<String, String> friendsList = new HashMap<String, String>();
+            for(int i=0; i<friends.length(); i++) {
+                try {
+                    JSONObject friend =  (JSONObject)friends.get(i);
+                    friendsList.put((String)friend.get("id"), (String)friend.get("name"));
+                }catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            user.setFriends(friendsList);
+        }
         return user;
     }
 
@@ -73,11 +89,11 @@ public class User extends ParseObject implements Serializable {
         put(FB_ID, fbId);
     }
 
-    public List<User> getFriends() {
-        return getList(FRIENDS);
+    public Map<String, String> getFriends() {
+        return getMap(FRIENDS);
     }
 
-    public void setFriends(List<User> friends) {
+    public void setFriends(Map<String, String> friends) {
         put(FRIENDS, friends);
     }
 

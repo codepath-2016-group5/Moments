@@ -25,6 +25,7 @@ public class User extends ParseObject implements Serializable {
     public static final String FB_ID = "fb_id";
     public static final String FRIENDS ="friends";
     public static final String LOCATION = "location";
+    public static final String PROFILE_PIC = "profile_pic";
 
     public User() {
         super();
@@ -103,5 +104,13 @@ public class User extends ParseObject implements Serializable {
 
     public void setLocation(ParseGeoPoint location) {
         put(LOCATION, location);
+    }
+
+    public String getProfilePic() {
+        return getString(PROFILE_PIC);
+    }
+
+    public void setProfilePic(String profilePic) {
+        put(PROFILE_PIC, profilePic);
     }
 }

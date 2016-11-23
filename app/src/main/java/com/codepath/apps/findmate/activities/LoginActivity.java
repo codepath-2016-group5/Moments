@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
 
         loginButton = (LoginButton) findViewById(R.id.login_button);
 
-        loginButton.setReadPermissions("email", "public_profile", "user_friends");
+        loginButton.setReadPermissions("email", "public_profile", "user_friends","user_photos");
 
         AccessToken accesstoken = AccessToken.getCurrentAccessToken();
 

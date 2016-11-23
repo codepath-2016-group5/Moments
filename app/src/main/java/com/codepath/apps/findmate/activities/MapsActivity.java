@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,11 +28,18 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.codepath.apps.findmate.R;
+import com.codepath.apps.findmate.client.FacebookClient;
 import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.codepath.apps.findmate.utils.MapUtils;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
@@ -45,7 +54,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -54,7 +65,12 @@ import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
@@ -108,6 +124,8 @@ public class MapsActivity extends AppCompatActivity implements
             handler.postDelayed(runnableCode, 2000);
         }
     };
+
+    private FacebookClient fbClient = new FacebookClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -619,13 +637,38 @@ public class MapsActivity extends AppCompatActivity implements
                         map.clear();
                         for (User member : group.getMembers()) {
                             if(member.getLocation() != null) {
-                                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
-                                        IconGenerator.STYLE_GREEN, member.getFullName());
-                                MapUtils.addMarker(map,new LatLng(member.getLocation().getLatitude(),
-                                        member.getLocation().getLongitude()), member.getFullName(), member.getFullName(),icon);
+                                addProfilePicMarker(member);
                             }
                         }
                     }
                 });
     }
+
+    private void addProfilePicMarker(final User member) {
+        String userId = member.getFbId();
+
+        if(member.getProfilePic() != null) {
+            MapUtils.addProfilePicMarker(MapsActivity.this, member, map);
+        } else {
+
+            fbClient.getProfilePic(userId,
+                    new GraphRequest.Callback() {
+                        public void onCompleted(GraphResponse response) {
+                            try {
+                                String profilePicURL = (String) response.getJSONObject().getJSONObject("data").get("url");
+
+                                member.setProfilePic(profilePicURL);
+                                member.saveInBackground();
+
+                                MapUtils.addProfilePicMarker(MapsActivity.this, member, map);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+        }
+    }
+
+
 }

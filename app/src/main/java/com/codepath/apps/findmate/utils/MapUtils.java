@@ -2,9 +2,15 @@ package com.codepath.apps.findmate.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.view.animation.BounceInterpolator;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.codepath.apps.findmate.activities.MapsActivity;
+import com.codepath.apps.findmate.models.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -12,6 +18,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 
 /**
  * Make sure you have included the Android Maps Utility library
@@ -34,6 +44,15 @@ public class MapUtils {
         return bitmapDescriptor;
     }
 
+    public static void createBubbleFromImage(Context context, String urlPath, SimpleTarget<Bitmap> target) {
+
+        Glide.with(context)
+                .load(urlPath)
+                .asBitmap()
+                .transform(new CropCircleTransformation(context))
+                .into(target);
+    }
+
     public static Marker addMarker(GoogleMap map, LatLng point, String title,
                                    String snippet,
                                    BitmapDescriptor marker) {
@@ -44,6 +63,19 @@ public class MapUtils {
 //                .snippet(snippet)
                 .icon(marker);
         return map.addMarker(options);
+    }
+
+    public static void addProfilePicMarker(Context content, final User member, final GoogleMap map) {
+        MapUtils.createBubbleFromImage(content, member.getProfilePic(), new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap bitmap, GlideAnimation glideAnimation) {
+                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+
+                MapUtils.addMarker(map,new LatLng(member.getLocation().getLatitude(),
+                        member.getLocation().getLongitude()), member.getFullName(), member.getFullName(),bitmapDescriptor);
+            }
+
+        });
     }
 
     public static void dropPinEffect(final Marker marker) {

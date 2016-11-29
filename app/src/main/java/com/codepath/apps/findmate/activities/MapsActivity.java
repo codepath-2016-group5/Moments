@@ -16,7 +16,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,8 +31,6 @@ import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.User;
 import com.codepath.apps.findmate.utils.MapUtils;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
@@ -47,16 +44,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 import com.parse.SaveCallback;
-
-import org.json.JSONException;
+import com.parse.ui.ParseLoginBuilder;
 
 import java.util.List;
 
@@ -70,13 +68,14 @@ public class MapsActivity extends AppCompatActivity implements
         LocationListener {
 
     public static final String USER_ID_EXTRA = "userId";
+
+    private final static int LOGIN_REQUEST = 1;
     /*
      * Define a request code to send to Google Play services This code is
      * returned in Activity.onActivityResult
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-    private String userId;
     private User user;
     private List<Group> groups;
     private int selectedGroupIndex;
@@ -117,17 +116,40 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
         setContentView(binding.getRoot());
+        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
 
-        userId = getIntent().getStringExtra(USER_ID_EXTRA);
-        user = ParseObject.createWithoutData(User.class, userId);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
+        setSupportActionBar(toolbar);
 
-        final FindCallback<Group> findCallback = new FindCallback<Group>() {
+        user = (User) ParseUser.getCurrentUser();
+        init();
+    }
+
+    private void init() {
+        fetchGroups(new FindCallback<Group>() {
             @Override
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
-                initializeView();
+
+                //setup on onclick event for invite friends
+                binding.llInviteGroup.setOnClickListener(onInviteGroupListener);
+                binding.llCreateGroup.setOnClickListener(onCreateGroupListener);
+                binding.llJoinGroup.setOnClickListener(onJoinGroupListener);
+                binding.llInvite.setOnClickListener(onAppInviteListener);
+
+                drawerLayout = binding.drawerLayout;
+                drawerLayout.addDrawerListener(new DrawerListener());
+                nvView = binding.nvView;
+                nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        selectDrawerItem(item);
+                        return true;
+                    }
+                });
 
                 if (mapFragment != null) {
                     mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -139,46 +161,6 @@ public class MapsActivity extends AppCompatActivity implements
                 } else {
                     Toast.makeText(MapsActivity.this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
                 }
-            }
-        };
-
-        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-
-        // fetch user and user's groups
-        if (user.isDataAvailable()) {
-            fetchGroups(findCallback);
-        } else {
-            user.fetchIfNeededInBackground(new GetCallback<ParseObject>() {
-                @Override
-                public void done(ParseObject object, ParseException e) {
-                    fetchGroups(findCallback);
-                }
-            });
-        }
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
-        setSupportActionBar(toolbar);
-
-        if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
-            throw new IllegalStateException("You forgot to supply a Google Maps API key");
-        }
-    }
-
-    private void initializeView() {
-        //setup on onclick event for invite friends
-        binding.llInviteGroup.setOnClickListener(onInviteGroupListener);
-        binding.llCreateGroup.setOnClickListener(onCreateGroupListener);
-        binding.llJoinGroup.setOnClickListener(onJoinGroupListener);
-        binding.llInvite.setOnClickListener(onAppInviteListener);
-
-        drawerLayout = binding.drawerLayout;
-        drawerLayout.addDrawerListener(new DrawerListener());
-        nvView = binding.nvView;
-        nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                selectDrawerItem(item);
-                return true;
             }
         });
     }
@@ -209,6 +191,22 @@ public class MapsActivity extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.miLogout:
+                ParseUser.logOut();
+
+                // start login activity
+                ParseLoginBuilder builder = new ParseLoginBuilder(MapsActivity.this);
+                startActivityForResult(builder.build(), 0);
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     protected void loadMap(GoogleMap googleMap) {
         map = googleMap;
         if (map != null) {
@@ -231,7 +229,10 @@ public class MapsActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Decide what to do based on the original request code
         switch (requestCode) {
-
+            case LOGIN_REQUEST:
+                user = (User) ParseUser.getCurrentUser();
+                init();
+                break;
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
 			/*
 			 * If the result code is Activity.RESULT_OK, try to connect again
@@ -306,12 +307,7 @@ public class MapsActivity extends AppCompatActivity implements
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
-        user.fetchIfNeededInBackground(new GetCallback<User>() {
-            @Override
-            public void done(User object, ParseException e) {
-                publishLocation(location);
-            }
-        });
+        publishLocation(location);
     }
 
     private void publishLocation(Location location) {
@@ -320,6 +316,7 @@ public class MapsActivity extends AppCompatActivity implements
             return;
         }
 
+        // FIXME
         user.setLocation(new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
         user.saveInBackground();
     }
@@ -439,11 +436,11 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
-    //define onClickListener for invite members
+    // define onClickListener for invite members
     private final View.OnClickListener onAppInviteListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            //open facebook app invite dialog.
+            // open facebook app invite dialog.
             if (AppInviteDialog.canShow()) {
                 AppInviteContent content = new AppInviteContent.Builder()
                         .setApplinkUrl(getString(R.string.fb_app_link))
@@ -585,26 +582,15 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     private void fetchGroups(FindCallback<Group> callback) {
-        fetchUserIfNeeded();
         ParseQuery.getQuery(Group.class)
                 .whereEqualTo(Group.MEMBERS_KEY, user)
                 .findInBackground(callback);
     }
 
     private void fetchGroupsByInviteCode(String inviteCode, FindCallback<Group> callback) {
-        fetchUserIfNeeded();
         ParseQuery.getQuery(Group.class)
                 .whereEqualTo(Group.INVITE_KEY, inviteCode)
                 .findInBackground(callback);
-    }
-
-    private void fetchUserIfNeeded() {
-        // FIXME : avoid blocking
-        try {
-            user.fetchIfNeeded();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
     }
 
     private Group getSelectedGroup() {
@@ -624,38 +610,13 @@ public class MapsActivity extends AppCompatActivity implements
                         map.clear();
                         for (User member : group.getMembers()) {
                             if(member.getLocation() != null) {
-                                addProfilePicMarker(member);
+                                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
+                                        IconGenerator.STYLE_GREEN, member.getUsername());
+                                MapUtils.addMarker(map, new LatLng(member.getLocation().getLatitude(),
+                                        member.getLocation().getLongitude()), member.getUsername(), member.getUsername(),icon);
                             }
                         }
                     }
                 });
     }
-
-    private void addProfilePicMarker(final User member) {
-        String userId = member.getFbId();
-
-        if(member.getProfilePic() != null) {
-            MapUtils.addProfilePicMarker(MapsActivity.this, member, map);
-        } else {
-
-            fbClient.getProfilePic(userId,
-                    new GraphRequest.Callback() {
-                        public void onCompleted(GraphResponse response) {
-                            try {
-                                String profilePicURL = (String) response.getJSONObject().getJSONObject("data").get("url");
-
-                                member.setProfilePic(profilePicURL);
-                                member.saveInBackground();
-
-                                MapUtils.addProfilePicMarker(MapsActivity.this, member, map);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-            );
-        }
-    }
-
-
 }

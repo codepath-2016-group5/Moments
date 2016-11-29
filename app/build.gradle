@@ -40,9 +40,17 @@ dependencies {
         transitive = true;
     }
 
-    //for parse
+    // parse
     compile 'com.parse:parse-android:1.13.1'
     compile 'com.parse:parseinterceptors:0.0.2'
+
+    // parse ui
+    compile 'com.parse:parseui-login-android:0.0.1'
+    compile 'com.parse:parseui-widget-android:0.0.1'
+
+    // facebook login
+    compile 'com.facebook.android:facebook-android-sdk:4.17.0'
+    compile 'com.parse:parsefacebookutils-v4-android:1.10.4@aar'
 
     compile 'com.android.support:support-v13:25.0.0'
     compile 'com.android.support:recyclerview-v7:25.0.0'
@@ -51,7 +59,6 @@ dependencies {
     compile 'com.android.support:design:25.0.0'
 
     compile 'com.codepath.libraries:android-oauth-handler:1.1.0'
-    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     compile 'com.google.android.gms:play-services-maps:9.4.0'
     compile 'com.google.android.gms:play-services-location:9.4.0'

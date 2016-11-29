@@ -1,7 +1,9 @@
 package com.codepath.apps.findmate.models;
 
+import com.parse.Parse;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import java.util.List;
 import java.util.Random;
@@ -53,10 +55,6 @@ public class Group extends ParseObject {
     public Group addMembers(List<User> members) {
         addAllUnique(MEMBERS_KEY, members);
         return this;
-    }
-
-    public static void main(String[] args) {
-
     }
 }
 

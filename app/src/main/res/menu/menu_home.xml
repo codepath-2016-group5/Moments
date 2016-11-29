@@ -9,9 +9,8 @@
         app:actionLayout="@layout/toolbar_switch"/>
 
     <item
-        android:id="@+id/miSettings"
-        android:title="@string/settings_fragment"
-        android:icon="@drawable/settings"
+        android:id="@+id/miLogout"
+        android:title="@string/logout"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom|collapseActionView"/>
+        app:showAsAction="collapseActionView"/>
 </menu>

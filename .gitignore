@@ -25,6 +25,4 @@ local.properties
 *.iml
 .gradle
 .idea
-build
-import-summary.txt
-src/main/java/com/codepath/apps/findmate/activities/
+build/

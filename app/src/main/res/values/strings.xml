@@ -5,12 +5,23 @@
 
     <string name="empty"></string>
 
+    <string name="location_sharing">Location sharing</string>
     <string name="logout">Logout</string>
 
-    <string name="cancel">Cancel</string>
-    <string name="create">Create</string>
+    <array name="location_sharing_items">
+        <item>On</item>
+        <item>Off</item>
+    </array>
 
-    <string name="share_location">Share location</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="create_group">Create group</string>
+    <string name="join_group">Join group</string>
+
+    <string name="group_name">Group name</string>
+    <string name="invite_code">Invite code</string>
+    <string name="invite_group">Invite new members to group</string>
 
     <string name="facebook_app_id">1192117680855184</string>
     <string name="fb_login_protocol_scheme">fb1192117680855184</string>
@@ -20,11 +31,4 @@
     <string name="gcm_sender_id">id:761078236734</string>
 
     <string name="invite">Invite new members to app</string>
-
-    <string name="create_group">Create group</string>
-    <string name="join_group">Join group</string>
-
-    <string name="group_name">Group name</string>
-    <string name="invite_code">Invite code</string>
-    <string name="invite_group">Invite new members to group</string>
 </resources>

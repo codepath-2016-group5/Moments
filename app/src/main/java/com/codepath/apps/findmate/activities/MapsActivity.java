@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,7 +30,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.client.FacebookClient;
-import com.codepath.apps.findmate.databinding.ActivityMapsBinding;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.utils.MapUtils;
@@ -64,8 +62,6 @@ import java.util.List;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
-import static com.codepath.apps.findmate.R.id.llInvite;
-
 @RuntimePermissions
 public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -81,8 +77,10 @@ public class MapsActivity extends AppCompatActivity implements
 
     private ParseUser user;
     private List<Group> groups;
+    // FIXME : need to persist selected group per user; persist sharingEnabled per user-group
     @Nullable
     private Integer selectedGroupIndex;
+    private boolean sharingEnabled = true;
 
     private SwitchCompat switchLocation;
     private SupportMapFragment mapFragment;
@@ -203,7 +201,6 @@ public class MapsActivity extends AppCompatActivity implements
         inflater.inflate(R.menu.menu_home, menu);
 
         MenuItem miLocation = menu.findItem(R.id.miLocation);
-        switchLocation = (SwitchCompat) miLocation.getActionView().findViewById(R.id.switchLocation);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -213,6 +210,9 @@ public class MapsActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case R.id.miLocation:
+                showLocationSharingDialog();
                 return true;
             case R.id.miLogout:
                 ParseUser.logOut();
@@ -332,9 +332,6 @@ public class MapsActivity extends AppCompatActivity implements
 
     private void publishLocation(Location location) {
         // do not publish location when switch is disabled
-        if (!switchLocation.isChecked()) {
-            return;
-        }
 
         // FIXME
         ParseUsers.setLocation(user, new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
@@ -507,6 +504,34 @@ public class MapsActivity extends AppCompatActivity implements
                                 }
                             }
                         });
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
+    private void showLocationSharingDialog() {
+        new MaterialDialog.Builder(MapsActivity.this)
+                .title(R.string.location_sharing)
+                .items(R.array.location_sharing_items)
+                .itemsCallbackSingleChoice(sharingEnabled ? 0 : 1, new MaterialDialog.ListCallbackSingleChoice() {
+                    @Override
+                    public boolean onSelection(MaterialDialog dialog, View itemView, int which,
+                            CharSequence text) {
+                        return true;
+                    }
+                })
+                .positiveText("Save")
+                .negativeText("Cancel")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                        sharingEnabled = dialog.getSelectedIndex() == 0;
                     }
                 })
                 .onNegative(new MaterialDialog.SingleButtonCallback() {

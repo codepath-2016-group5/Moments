@@ -87,7 +87,6 @@ public class MapsActivity extends AppCompatActivity implements
     private GoogleMap map;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
-    private LinearLayout llInviteGroup;
     private LinearLayout llInviteApp;
 
     private GoogleApiClient mGoogleApiClient;
@@ -124,7 +123,6 @@ public class MapsActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        llInviteGroup = (LinearLayout) findViewById(R.id.llInviteGroup);
         llInviteApp = (LinearLayout) findViewById(R.id.llInvite);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
@@ -145,8 +143,6 @@ public class MapsActivity extends AppCompatActivity implements
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
 
-                //setup on onclick event for invite friends
-                llInviteGroup.setOnClickListener(onInviteGroupListener);
                 llInviteApp.setOnClickListener(onAppInviteListener);
 
                 addGroupsSubMenu(nvView.getMenu());
@@ -211,9 +207,15 @@ public class MapsActivity extends AppCompatActivity implements
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
+
+            case R.id.miInviteGroup:
+                showInviteToGroupDialog();
+                return true;
+
             case R.id.miLocation:
                 showLocationSharingDialog();
                 return true;
+
             case R.id.miLogout:
                 ParseUser.logOut();
 
@@ -543,6 +545,20 @@ public class MapsActivity extends AppCompatActivity implements
                 .show();
     }
 
+    private void showInviteToGroupDialog() {
+        new MaterialDialog.Builder(MapsActivity.this)
+                .title(R.string.invite_code)
+                .content(getSelectedGroup().getInviteCode())
+                .positiveText("Done")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
     // Define a DialogFragment that displays the error dialog
     public static class ErrorDialogFragment extends DialogFragment {
 
@@ -579,23 +595,6 @@ public class MapsActivity extends AppCompatActivity implements
                         .build();
                 AppInviteDialog.show(MapsActivity.this, content);
             }
-        }
-    };
-
-    private final View.OnClickListener onInviteGroupListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            new MaterialDialog.Builder(MapsActivity.this)
-                    .title(R.string.invite_code)
-                    .content(getSelectedGroup().getInviteCode())
-                    .positiveText("Done")
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .show();
         }
     };
 

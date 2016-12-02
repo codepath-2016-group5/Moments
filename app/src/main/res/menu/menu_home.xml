@@ -3,6 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/miInviteGroup"
+        android:title="@string/invite_group"
+        app:showAsAction="collapseActionView"/>
+
+    <item
         android:id="@+id/miLocation"
         android:title="@string/location_sharing"
         app:showAsAction="collapseActionView"/>

@@ -1,8 +1,12 @@
 package com.codepath.apps.findmate.models;
 
+import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.List;
@@ -17,12 +21,32 @@ public class Group extends ParseObject {
 
     private static final Random RANDOM = new Random();
 
-    public Group() {
+    public static void getGroupsByUser(User user, FindCallback<Group> callback) {
+        ParseQuery.getQuery(Group.class)
+                .include(Group.MEMBERS_KEY)
+                .whereEqualTo(Group.MEMBERS_KEY, user)
+                .findInBackground(callback);
+    }
+
+    public static void getGroupByInviteCode(String inviteCode, FindCallback<Group> callback) {
+        ParseQuery.getQuery(Group.class)
+                .include(Group.MEMBERS_KEY)
+                .whereEqualTo(Group.INVITE_KEY, inviteCode)
+                .findInBackground(callback);
+    }
+
+    public static void getGroupById(String id, GetCallback<Group> callback) {
+        ParseQuery.getQuery(Group.class)
+                .include(Group.MEMBERS_KEY)
+                .getInBackground(id, callback);
     }
 
     // Generate a random six-digit string
     public static String randomInviteCode() {
         return Integer.toString(100000 + RANDOM.nextInt(900000));
+    }
+
+    public Group() {
     }
 
     public String getName() {

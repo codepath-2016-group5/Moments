@@ -10,6 +10,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.DrawerLayout;
@@ -51,7 +52,6 @@ import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.ui.ParseLoginBuilder;
@@ -113,6 +113,11 @@ public class MapsActivity extends AppCompatActivity implements
 
     private FacebookClient fbClient = new FacebookClient();
 
+    @Nullable
+    private Group getSelectedGroup() {
+        return groups.get(selectedGroupIndex);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,12 +129,12 @@ public class MapsActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
 
-        user = (User) ParseUser.getCurrentUser();
+        user = User.getCurrentUser();
         init();
     }
 
     private void init() {
-        fetchGroups(new FindCallback<Group>() {
+        Group.getGroupsByUser(user, new FindCallback<Group>() {
             @Override
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
@@ -504,7 +509,8 @@ public class MapsActivity extends AppCompatActivity implements
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
-                            fetchGroupsByInviteCode(dialog.getInputEditText().getText().toString(), new FindCallback<Group>() {
+                            String inviteCode = dialog.getInputEditText().getText().toString();
+                            Group.getGroupByInviteCode(inviteCode, new FindCallback<Group>() {
                                 @Override
                                 public void done(List<Group> objects, ParseException e) {
                                     if (objects.isEmpty()) {
@@ -581,42 +587,25 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
-    private void fetchGroups(FindCallback<Group> callback) {
-        ParseQuery.getQuery(Group.class)
-                .whereEqualTo(Group.MEMBERS_KEY, user)
-                .findInBackground(callback);
-    }
-
-    private void fetchGroupsByInviteCode(String inviteCode, FindCallback<Group> callback) {
-        ParseQuery.getQuery(Group.class)
-                .whereEqualTo(Group.INVITE_KEY, inviteCode)
-                .findInBackground(callback);
-    }
-
-    private Group getSelectedGroup() {
-        return groups.get(selectedGroupIndex);
-    }
-
     private void mapGroup(final GoogleMap map) {
         if (groups.size() == 0) {
             return;
         }
 
-        ParseQuery.getQuery(Group.class)
-                .include(Group.MEMBERS_KEY)
-                .getInBackground(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
-                    @Override
-                    public void done(Group group, ParseException e) {
-                        map.clear();
-                        for (User member : group.getMembers()) {
-                            if(member.getLocation() != null) {
-                                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
-                                        IconGenerator.STYLE_GREEN, member.getUsername());
-                                MapUtils.addMarker(map, new LatLng(member.getLocation().getLatitude(),
-                                        member.getLocation().getLongitude()), member.getUsername(), member.getUsername(),icon);
-                            }
-                        }
+        Group.getGroupById(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
+            @Override
+            public void done(Group group, ParseException e) {
+                map.clear();
+                for (User member : group.getMembers()) {
+                    if(member.getLocation() != null) {
+                        BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
+                                IconGenerator.STYLE_GREEN, member.getUsername());
+                        MapUtils.addMarker(map, new LatLng(member.getLocation().getLatitude(),
+                                member.getLocation().getLongitude()), member.getUsername(), member.getUsername(),icon);
                     }
-                });
+                }
+
+            }
+        });
     }
 }

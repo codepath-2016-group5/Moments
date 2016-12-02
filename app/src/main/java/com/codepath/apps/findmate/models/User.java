@@ -20,7 +20,11 @@ import static android.R.attr.name;
 @ParseClassName("_User")
 public class User extends ParseUser {
 
-    private static final String LOCATION = "location";
+    public static final String LOCATION = "location";
+
+    public static User getCurrentUser() {
+        return (User) ParseUser.getCurrentUser();
+    }
 
     public User() {
         super();

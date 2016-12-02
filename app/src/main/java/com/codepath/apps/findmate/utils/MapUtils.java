@@ -2,15 +2,9 @@ package com.codepath.apps.findmate.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.os.SystemClock;
-import android.view.animation.BounceInterpolator;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.codepath.apps.findmate.activities.MapsActivity;
-import com.codepath.apps.findmate.models.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -18,8 +12,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 

@@ -23,6 +23,7 @@
 
     <string name="create_group">Create group</string>
     <string name="join_group">Join group</string>
+
     <string name="group_name">Group name</string>
     <string name="invite_code">Invite code</string>
     <string name="invite_group">Invite new members to group</string>

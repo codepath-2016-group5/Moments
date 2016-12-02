@@ -82,76 +82,10 @@
                     </LinearLayout>
 
                     <View
-                        android:id="@+id/viewSeparator1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
-                        android:layout_below="@id/llInviteGroup"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:background="@android:color/darker_gray" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:id="@+id/llCreateGroup"
-                        android:layout_below="@id/viewSeparator1">
-                        <ImageButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@mipmap/ic_add"
-                            android:background="@android:color/transparent"
-                            android:layout_marginLeft="20dp"
-                            android:layout_marginBottom="10dp"
-                            android:layout_marginTop="10dp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginTop="20dp"
-                            android:textColor="@color/colorPrimary"
-                            android:textSize="17sp"
-                            android:text="@string/create_group"/>
-                    </LinearLayout>
-
-                    <View
-                        android:id="@+id/viewSeparator2"
-                        android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
-                        android:layout_below="@id/llCreateGroup"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:background="@android:color/darker_gray" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:id="@+id/llJoinGroup"
-                        android:layout_below="@id/viewSeparator2">
-                        <ImageButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@mipmap/ic_add"
-                            android:background="@android:color/transparent"
-                            android:layout_marginLeft="20dp"
-                            android:layout_marginBottom="10dp"
-                            android:layout_marginTop="10dp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginTop="20dp"
-                            android:textColor="@color/colorPrimary"
-                            android:textSize="17sp"
-                            android:text="@string/join_group"/>
-                    </LinearLayout>
-
-                    <View
                         android:id="@+id/viewSeparator3"
                         android:layout_width="match_parent"
                         android:layout_height="0.5dp"
-                        android:layout_below="@id/llJoinGroup"
+                        android:layout_below="@id/llInviteGroup"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentRight="true"
                         android:background="@android:color/darker_gray" />
@@ -199,7 +133,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:background="@android:color/white"
-            app:menu="@menu/drawer_resource" />
+            app:menu="@menu/drawer_view" />
 
     </android.support.v4.widget.DrawerLayout>
 </layout>

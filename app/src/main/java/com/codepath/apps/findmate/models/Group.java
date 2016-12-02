@@ -21,7 +21,7 @@ public class Group extends ParseObject {
 
     private static final Random RANDOM = new Random();
 
-    public static void getGroupsByUser(User user, FindCallback<Group> callback) {
+    public static void getGroupsByUser(ParseUser user, FindCallback<Group> callback) {
         ParseQuery.getQuery(Group.class)
                 .include(Group.MEMBERS_KEY)
                 .whereEqualTo(Group.MEMBERS_KEY, user)
@@ -41,11 +41,6 @@ public class Group extends ParseObject {
                 .getInBackground(id, callback);
     }
 
-    // Generate a random six-digit string
-    public static String randomInviteCode() {
-        return Integer.toString(100000 + RANDOM.nextInt(900000));
-    }
-
     public Group() {
     }
 
@@ -57,7 +52,7 @@ public class Group extends ParseObject {
         return getString(INVITE_KEY);
     }
 
-    public List<User> getMembers() {
+    public List<ParseUser> getMembers() {
         return getList(MEMBERS_KEY);
     }
 
@@ -66,19 +61,24 @@ public class Group extends ParseObject {
         return this;
     }
 
-    public Group setInviteCode(String inviteCode) {
-        put(INVITE_KEY, inviteCode);
+    public Group setInviteCode() {
+        put(INVITE_KEY, randomInviteCode());
         return this;
     }
 
-    public Group addMember(User member) {
+    public Group addMember(ParseUser member) {
         add(MEMBERS_KEY, member);
         return this;
     }
 
-    public Group addMembers(List<User> members) {
+    public Group addMembers(List<ParseUser> members) {
         addAllUnique(MEMBERS_KEY, members);
         return this;
+    }
+
+    // Generate a random six-digit string
+    private static String randomInviteCode() {
+        return Integer.toString(100000 + RANDOM.nextInt(900000));
     }
 }
 

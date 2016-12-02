@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/create_group_fragment"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="@string/create_group"
+            android:onClick="onCreateGroupClick"/>
+        <item
+            android:id="@+id/join_group_fragment"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="@string/join_group"
+            android:onClick="onJoinGroupClick" />
+    </group>
+
+</menu>

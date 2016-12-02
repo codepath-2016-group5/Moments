@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -23,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -62,13 +64,13 @@ import java.util.List;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+import static com.codepath.apps.findmate.R.id.llInvite;
+
 @RuntimePermissions
 public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
-
-    public static final String USER_ID_EXTRA = "userId";
 
     private final static int LOGIN_REQUEST = 1;
     /*
@@ -87,15 +89,14 @@ public class MapsActivity extends AppCompatActivity implements
     private GoogleMap map;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
+    private LinearLayout llInviteGroup;
+    private LinearLayout llInviteApp;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
-
-    //binding object
-    private ActivityMapsBinding binding;
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -123,13 +124,18 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
-        setContentView(binding.getRoot());
+        llInviteGroup = (LinearLayout) findViewById(R.id.llInviteGroup);
+        llInviteApp = (LinearLayout) findViewById(R.id.llInvite);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        nvView = (NavigationView) findViewById(R.id.nvView);
         mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         user = ParseUser.getCurrentUser();
         init();
@@ -142,12 +148,9 @@ public class MapsActivity extends AppCompatActivity implements
                 MapsActivity.this.groups = groups;
 
                 //setup on onclick event for invite friends
-                binding.llInviteGroup.setOnClickListener(onInviteGroupListener);
-                binding.llInvite.setOnClickListener(onAppInviteListener);
+                llInviteGroup.setOnClickListener(onInviteGroupListener);
+                llInviteApp.setOnClickListener(onAppInviteListener);
 
-                drawerLayout = binding.drawerLayout;
-
-                nvView = binding.nvView;
                 addGroupsSubMenu(nvView.getMenu());
                 nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -208,6 +211,9 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
             case R.id.miLogout:
                 ParseUser.logOut();
 

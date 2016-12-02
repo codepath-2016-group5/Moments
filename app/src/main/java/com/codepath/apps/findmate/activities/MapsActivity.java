@@ -21,9 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -165,10 +163,11 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     private void addGroupsSubMenu(Menu menu) {
-        final SubMenu subMenu = menu.addSubMenu("Groups");
+        MenuItem miGroups = menu.findItem(R.id.nav_groups_item);
+        miGroups.getSubMenu().setGroupVisible(R.id.nav_groups_group, false);
 
         for (Group group : groups) {
-            subMenu.add(group.getName());
+            miGroups.getSubMenu().add(group.getName());
         }
     }
 

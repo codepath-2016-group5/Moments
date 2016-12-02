@@ -427,6 +427,8 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     public void onCreateGroupClick(MenuItem item) {
+        drawerLayout.closeDrawers();
+
         new MaterialDialog.Builder(MapsActivity.this)
                 .title(R.string.create_group)
                 .input(R.string.group_name, R.string.empty, false, new MaterialDialog.InputCallback() {
@@ -464,6 +466,8 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     public void onJoinGroupClick(MenuItem item) {
+        drawerLayout.closeDrawers();
+
         new MaterialDialog.Builder(MapsActivity.this)
                 .title(R.string.join_group)
                 .input(R.string.invite_code, R.string.empty, false, new MaterialDialog.InputCallback() {

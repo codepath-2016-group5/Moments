@@ -87,7 +87,6 @@ public class MapsActivity extends AppCompatActivity implements
     private GoogleMap map;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
-    private LinearLayout llInviteApp;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -123,7 +122,6 @@ public class MapsActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        llInviteApp = (LinearLayout) findViewById(R.id.llInvite);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
         mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
@@ -142,8 +140,6 @@ public class MapsActivity extends AppCompatActivity implements
             @Override
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
-
-                llInviteApp.setOnClickListener(onAppInviteListener);
 
                 addGroupsSubMenu(nvView.getMenu());
                 nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -517,6 +513,19 @@ public class MapsActivity extends AppCompatActivity implements
                 .show();
     }
 
+    public void onInviteToAppClick(MenuItem item) {
+        drawerLayout.closeDrawers();
+
+        // open facebook app invite dialog.
+        if (AppInviteDialog.canShow()) {
+            AppInviteContent content = new AppInviteContent.Builder()
+                    .setApplinkUrl(getString(R.string.fb_app_link))
+                    .setPreviewImageUrl(getString(R.string.fb_image_preview_url))
+                    .build();
+            AppInviteDialog.show(MapsActivity.this, content);
+        }
+    }
+
     private void showLocationSharingDialog() {
         new MaterialDialog.Builder(MapsActivity.this)
                 .title(R.string.location_sharing)
@@ -587,14 +596,6 @@ public class MapsActivity extends AppCompatActivity implements
     private final View.OnClickListener onAppInviteListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            // open facebook app invite dialog.
-            if (AppInviteDialog.canShow()) {
-                AppInviteContent content = new AppInviteContent.Builder()
-                        .setApplinkUrl(getString(R.string.fb_app_link))
-                        .setPreviewImageUrl(getString(R.string.fb_image_preview_url))
-                        .build();
-                AppInviteDialog.show(MapsActivity.this, content);
-            }
         }
     };
 

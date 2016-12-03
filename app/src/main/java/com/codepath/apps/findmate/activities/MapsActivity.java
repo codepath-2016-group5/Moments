@@ -15,12 +15,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.widget.Toast;
 
@@ -34,6 +34,7 @@ import com.codepath.apps.findmate.utils.MapUtils;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.ErrorDialogFragment;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -62,9 +63,14 @@ import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
 public class MapsActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationListener, OnMapReadyCallback,
+        NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = "MapsActivity";
+
+    private static long UPDATE_INTERVAL = 60000;  /* 60 secs */
+    private static long FASTEST_INTERVAL = 5000; /* 5 secs */
 
     private final static int LOGIN_REQUEST = 1;
     /*
@@ -80,31 +86,38 @@ public class MapsActivity extends AppCompatActivity implements
     private Integer selectedGroupIndex;
     private boolean sharingEnabled = true;
 
-    private SwitchCompat switchLocation;
     private SupportMapFragment mapFragment;
     private GoogleMap map;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
 
-    private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
-
-    private long UPDATE_INTERVAL = 60000;  /* 60 secs */
-    private long FASTEST_INTERVAL = 5000; /* 5 secs */
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
 
     // Create the Handler object (on the main thread by default)
-    Handler handler = new Handler();
+    private Handler handler = new Handler();
     // Define the code block to be executed
-    private Runnable runnableCode = new Runnable() {
+    private Runnable refreshMap = new Runnable() {
         @Override
         public void run() {
-            // Do something here on the main thread
-            Log.d("Handlers", "Called on main thread");
+            Log.d("Handlers", "Refresh map called on the main thread");
 
-            mapGroup(map);
+            // Do nothing if the user has no selected group
+            if (getSelectedGroup() == null) {
+                return;
+            }
+
+            Group.getGroupById(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
+                @Override
+                public void done(Group group, ParseException e) {
+                    if (map != null) {
+                        drawGroup(group, map);
+                    }
+                }
+            });
 
             // Repeat this the same runnable code block again another 2 seconds
-            handler.postDelayed(runnableCode, 2000);
+            handler.postDelayed(refreshMap, 2000);
         }
     };
 
@@ -112,7 +125,17 @@ public class MapsActivity extends AppCompatActivity implements
 
     @Nullable
     private Group getSelectedGroup() {
-        return selectedGroupIndex == null ? null : groups.get(selectedGroupIndex);
+        if (selectedGroupIndex == null) {
+            // select the first group by default
+            if (groups.isEmpty()) {
+                return null;
+            } else {
+                selectedGroupIndex = 0;
+                return groups.get(selectedGroupIndex);
+            }
+        } else {
+            return groups.get(selectedGroupIndex);
+        }
     }
 
     @Override
@@ -120,68 +143,88 @@ public class MapsActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        user = ParseUser.getCurrentUser();
+
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
+        nvView.setNavigationItemSelectedListener(this);
         mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        user = ParseUser.getCurrentUser();
-        init();
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
     }
 
-    private void init() {
+    @Override
+    public void onMapReady(GoogleMap map) {
+        this.map = map;
+
+        if (map != null) {
+            // Map is ready
+            Log.d(TAG, "Map Fragment was loaded properly!");
+            MapsActivityPermissionsDispatcher.getMyLocationWithCheck(this);
+        } else {
+            Log.e(TAG, "Could not load map fragment");
+            Toast.makeText(this, "Could not load map", Toast.LENGTH_SHORT).show();
+        }
+
         Group.getGroupsByUser(user, new FindCallback<Group>() {
             @Override
             public void done(List<Group> groups, ParseException e) {
                 MapsActivity.this.groups = groups;
+                MapsActivity.this.selectedGroupIndex = 0;
 
-                addGroupsSubMenu(nvView.getMenu());
-                nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        selectDrawerItem(item);
-                        return true;
-                    }
-                });
+                onGroupUpdated();
 
-                if (mapFragment != null) {
-                    mapFragment.getMapAsync(new OnMapReadyCallback() {
-                        @Override
-                        public void onMapReady(GoogleMap map) {
-                            loadMap(map);
-                        }
-                    });
-                } else {
-                    Toast.makeText(MapsActivity.this, "Error - Map Fragment was null!!", Toast.LENGTH_SHORT).show();
-                }
+                handler.post(refreshMap);
             }
         });
     }
 
-    private void addGroupsSubMenu(Menu menu) {
-        MenuItem miGroups = menu.findItem(R.id.nav_groups_item);
-        miGroups.getSubMenu().setGroupVisible(R.id.nav_groups_group, false);
+    private void onGroupUpdated() {
+        // Update the title with the selected group name
+        if (getSelectedGroup() != null) {
+            setTitle(getSelectedGroup().getName());
+        }
 
+        // Setup the menu
+        initMenu(nvView.getMenu());
+
+        // Draw all of the members of the group
+        drawGroup(getSelectedGroup(), map);
+    }
+
+    private void initMenu(Menu menu) {
+        MenuItem miGroups = menu.findItem(R.id.nav_groups_item);
+        SubMenu groupsSubMenu = miGroups.getSubMenu();
+        groupsSubMenu.setGroupVisible(R.id.nav_groups_group, true);
+
+        groupsSubMenu.clear();
         for (Group group : groups) {
-            miGroups.getSubMenu().add(group.getName());
+            MenuItem miGroup = groupsSubMenu.add(group.getName());
+
+            if (getSelectedGroup() != null &&
+                    group.getObjectId().equals(getSelectedGroup().getObjectId())) {
+                miGroup.setChecked(true);
+            }
         }
     }
 
-    private void selectDrawerItem(MenuItem menuItem) {
-        for (int index = 0; index < groups.size(); ++index) {
-            Group group = groups.get(index);
-            if (group.getName().equals(menuItem.getTitle().toString())) {
-                selectedGroupIndex = index;
+    private void drawGroup(Group group, GoogleMap map) {
+        // Clear the map
+        map.clear();
 
-                menuItem.setChecked(true);
-                setTitle(menuItem.getTitle());
-
-                drawerLayout.closeDrawers();
-                return;
+        // Draw a marker for each member on the map
+        for (ParseUser member : group.getMembers()) {
+            if (ParseUsers.getLocation(member) != null) {
+                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
+                        IconGenerator.STYLE_GREEN, member.getUsername());
+                MapUtils.addMarker(map, new LatLng(ParseUsers.getLocation(member).getLatitude(),
+                        ParseUsers.getLocation(member).getLongitude()), member.getUsername(), member.getUsername(),icon);
             }
         }
     }
@@ -190,9 +233,6 @@ public class MapsActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_home, menu);
-
-        MenuItem miLocation = menu.findItem(R.id.miLocation);
-
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -224,31 +264,80 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
-    protected void loadMap(GoogleMap googleMap) {
-        map = googleMap;
-        if (map != null) {
-            // Map is ready
-//           Toast.makeText(this, "Map Fragment was loaded properly!", Toast.LENGTH_SHORT).show();
-            MapsActivityPermissionsDispatcher.getMyLocationWithCheck(this);
-//            map.setOnMapLongClickListener(this);
-//            map.setOnMarkerDragListener(this);
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        for (int index = 0; index < groups.size(); ++index) {
+            Group group = groups.get(index);
+            if (group.getName().equals(item.getTitle().toString())) {
+                selectedGroupIndex = index;
 
-            handler.post(runnableCode);
-        } else {
-            Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
+                onGroupUpdated();
+
+                drawerLayout.closeDrawers();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MapsActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @SuppressWarnings("all")
+    @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+    void getMyLocation() {
+        if (map != null) {
+            // Now that map has loaded, let's get our location!
+            map.setMyLocationEnabled(true);
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this).build();
+            connectClient();
+        }
+    }
+
+    protected void connectClient() {
+        // Connect the client.
+        if (isGooglePlayServicesAvailable() && googleApiClient != null) {
+            googleApiClient.connect();
         }
     }
 
     /*
-	 * Handle results returned to the FragmentActivity by Google Play services
+     * Called when the Activity becomes visible.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        connectClient();
+    }
+
+    /*
+	 * Called when the Activity is no longer visible.
 	 */
+    @Override
+    protected void onStop() {
+        // Disconnecting the client invalidates it.
+        if (googleApiClient != null) {
+            googleApiClient.disconnect();
+        }
+        super.onStop();
+    }
+
+    /*
+     * Handle results returned to the FragmentActivity by Google Play services
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Decide what to do based on the original request code
         switch (requestCode) {
             case LOGIN_REQUEST:
                 user = ParseUser.getCurrentUser();
-                init();
                 break;
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
 			/*
@@ -256,7 +345,7 @@ public class MapsActivity extends AppCompatActivity implements
 			 */
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        mGoogleApiClient.connect();
+                        googleApiClient.connect();
                         break;
                 }
 
@@ -296,9 +385,9 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     public void onConnected(Bundle dataBundle) {
         // Display the connection status
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (location != null) {
-           // Toast.makeText(this, "GPS location was found!", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "GPS location was found!", Toast.LENGTH_SHORT).show();
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
             map.animateCamera(cameraUpdate);
@@ -309,28 +398,26 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     protected void startLocationUpdates() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                mLocationRequest, this);
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient,
+                locationRequest, this);
     }
 
     public void onLocationChanged(final Location location) {
-        // Report to the UI that the location was updated
+        // Log that the location was updated
         String msg = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, msg);
 
+        // Send the updated location to the parse server
         publishLocation(location);
     }
 
     private void publishLocation(Location location) {
-        // do not publish location when switch is disabled
-
-        // FIXME
         ParseUsers.setLocation(user, new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
         user.saveInBackground();
     }
@@ -377,55 +464,6 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        MapsActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-    }
-
-    @SuppressWarnings("all")
-    @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    void getMyLocation() {
-        if (map != null) {
-            // Now that map has loaded, let's get our location!
-            map.setMyLocationEnabled(true);
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this).build();
-            connectClient();
-        }
-    }
-
-    protected void connectClient() {
-        // Connect the client.
-        if (isGooglePlayServicesAvailable() && mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
-    }
-
-    /*
-     * Called when the Activity becomes visible.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        connectClient();
-    }
-
-    /*
-	 * Called when the Activity is no longer visible.
-	 */
-    @Override
-    protected void onStop() {
-        // Disconnecting the client invalidates it.
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.disconnect();
-        }
-        super.onStop();
-    }
-
     public void onCreateGroupClick(MenuItem item) {
         drawerLayout.closeDrawers();
 
@@ -449,8 +487,11 @@ public class MapsActivity extends AppCompatActivity implements
                             @Override
                             public void done(ParseException e) {
                                 groups.add(group);
-                                // FIXME : need to rerender
                                 selectedGroupIndex = groups.indexOf(group);
+
+                                // Re-render with the newly created group
+                                onGroupUpdated();
+
                                 dialog.dismiss();
                             }
                         });
@@ -495,6 +536,11 @@ public class MapsActivity extends AppCompatActivity implements
                                         @Override
                                         public void done(ParseException e) {
                                             groups.add(group);
+                                            selectedGroupIndex = groups.indexOf(group);
+
+                                            // Re-render with the newly joined group
+                                            onGroupUpdated();
+
                                             dialog.dismiss();
                                         }
                                     });
@@ -589,38 +635,5 @@ public class MapsActivity extends AppCompatActivity implements
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return mDialog;
         }
-    }
-
-    // define onClickListener for invite members
-    private final View.OnClickListener onAppInviteListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-        }
-    };
-
-    private void mapGroup(final GoogleMap map) {
-        if (groups.size() == 0) {
-            return;
-        }
-
-        if (getSelectedGroup() == null) {
-            return;
-        }
-
-        Group.getGroupById(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
-            @Override
-            public void done(Group group, ParseException e) {
-                map.clear();
-                for (ParseUser member : group.getMembers()) {
-                    if(ParseUsers.getLocation(member) != null) {
-                        BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
-                                IconGenerator.STYLE_GREEN, member.getUsername());
-                        MapUtils.addMarker(map, new LatLng(ParseUsers.getLocation(member).getLatitude(),
-                                ParseUsers.getLocation(member).getLongitude()), member.getUsername(), member.getUsername(),icon);
-                    }
-                }
-
-            }
-        });
     }
 }

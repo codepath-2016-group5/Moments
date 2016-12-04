@@ -3,15 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/miLocation"
-        android:title="@string/share_location"
-        app:showAsAction="always"
-        app:actionLayout="@layout/toolbar_switch"/>
+        android:id="@+id/miInviteGroup"
+        android:title="@string/invite_group"
+        app:showAsAction="collapseActionView"/>
 
     <item
-        android:id="@+id/miSettings"
-        android:title="@string/settings_fragment"
-        android:icon="@drawable/settings"
+        android:id="@+id/miLocation"
+        android:title="@string/location_sharing"
+        app:showAsAction="collapseActionView"/>
+
+    <item
+        android:id="@+id/miLogout"
+        android:title="@string/logout"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom|collapseActionView"/>
+        app:showAsAction="collapseActionView"/>
 </menu>

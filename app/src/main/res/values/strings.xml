@@ -5,17 +5,34 @@
 
     <string name="empty"></string>
 
+    <string name="location_sharing">Location sharing</string>
+    <string name="logout">Logout</string>
+
+    <array name="location_sharing_items">
+        <item>On</item>
+        <item>Off</item>
+    </array>
+
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="groups">Groups</string>
+    <string name="create_group">Create group</string>
+    <string name="join_group">Join group</string>
+
+    <string name="invite_app">Invite new members to app</string>
+
+    <string name="group_name">Group name</string>
+    <string name="invite_code">Invite code</string>
+    <string name="invite_group">Invite new members to group</string>
+
+
+
     <string name="event_name_hint">Event name</string>
     <string name="details_hint">Details</string>
     <string name="start_date_hint">Start date</string>
     <string name="end_date_hint">End date</string>
     <string name="location_hint">Location</string>
-
-    <string name="cancel">Cancel</string>
-    <string name="create">Create</string>
-    <string name="events_fragment">Events</string>
-    <string name="profile_fragment">Profile</string>
-    <string name="settings_fragment">Settings</string>
 
     <string name="share_location">Share location</string>
 
@@ -28,9 +45,4 @@
 
     <string name="invite">Invite new members to app</string>
 
-    <string name="create_group">Create group</string>
-    <string name="join_group">Join group</string>
-    <string name="group_name">Group name</string>
-    <string name="invite_code">Invite code</string>
-    <string name="invite_group">Invite new members to group</string>
 </resources>

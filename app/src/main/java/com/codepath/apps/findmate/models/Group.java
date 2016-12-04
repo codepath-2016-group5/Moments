@@ -18,6 +18,7 @@ public class Group extends ParseObject {
     public static final String NAME_KEY = "name";
     public static final String INVITE_KEY = "invite";
     public static final String MEMBERS_KEY = "members";
+    public static final String CHECK_INS_KEY = "checkins";
 
     private static final Random RANDOM = new Random();
 
@@ -56,6 +57,10 @@ public class Group extends ParseObject {
         return getList(MEMBERS_KEY);
     }
 
+    public List<CheckIn> getCheckIns() {
+        return getList(CHECK_INS_KEY);
+    }
+
     public Group setName(String name) {
         put(NAME_KEY, name);
         return this;
@@ -71,8 +76,8 @@ public class Group extends ParseObject {
         return this;
     }
 
-    public Group addMembers(List<ParseUser> members) {
-        addAllUnique(MEMBERS_KEY, members);
+    public Group addCheckIn(CheckIn checkIn) {
+        add(CHECK_INS_KEY, checkIn);
         return this;
     }
 

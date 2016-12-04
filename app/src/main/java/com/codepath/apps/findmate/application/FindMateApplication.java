@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
@@ -21,6 +22,7 @@ public class FindMateApplication extends Application {
 
         // Register parse models
         ParseObject.registerSubclass(Group.class);
+        ParseObject.registerSubclass(CheckIn.class);
 
         ApplicationInfo app = null;
         try {

@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
+import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.utils.MapUtils;
@@ -47,8 +48,7 @@ import permissions.dispatcher.RuntimePermissions;
 public class MapsFragment extends Fragment implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,
-        OnMapReadyCallback {
+        LocationListener, OnMapReadyCallback, ViewPagerFragment {
 
     private static final String TAG = "MapsFragment";
 
@@ -60,8 +60,6 @@ public class MapsFragment extends Fragment implements
      * returned in Activity.onActivityResult
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
-    private String groupId;
 
     private ParseUser user;
     private Group group;
@@ -99,19 +97,13 @@ public class MapsFragment extends Fragment implements
         }
     };
 
-    public static MapsFragment newInstance(String groupId) {
-        MapsFragment fragment = new MapsFragment();
-        Bundle args = new Bundle();
-        args.putString("groupId", groupId);
-        fragment.setArguments(args);
-        return fragment;
+    public static MapsFragment newInstance() {
+        return new MapsFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        groupId = getArguments().getString("groupId", null);
         user = ParseUser.getCurrentUser();
     }
 
@@ -147,16 +139,12 @@ public class MapsFragment extends Fragment implements
             Toast.makeText(getActivity(), "Could not load map", Toast.LENGTH_SHORT).show();
         }
 
-        Group.getGroupById(groupId, new GetCallback<Group>() {
-            @Override
-            public void done(Group group, ParseException e) {
-                MapsFragment.this.group = group;
-                drawGroup(group, MapsFragment.this.map);
-            }
-        });
+        drawGroup(group, MapsFragment.this.map);
     }
 
-    public void updateGroup(Group group) {
+    @Override
+    public void onGroupUpdated(Group group) {
+        MapsFragment.this.group = group;
         drawGroup(group, map);
     }
 

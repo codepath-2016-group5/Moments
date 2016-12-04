@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -64,6 +65,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -93,8 +95,8 @@ public class MapsActivity extends AppCompatActivity implements
     private User user;
     private List<Group> groups;
     private int selectedGroupIndex;
+    private boolean sharingEnabled = true;
 
-    private SwitchCompat switchLocation;
     private SupportMapFragment mapFragment;
     private GoogleMap map;
     private NavigationView nvView;
@@ -105,9 +107,6 @@ public class MapsActivity extends AppCompatActivity implements
 
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
-
-    //binding object
-    private ActivityMapsBinding binding;
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -130,8 +129,11 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_maps);
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_maps);
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        nvView = (NavigationView) findViewById(R.id.nvView);
+        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
 
         userId = getIntent().getStringExtra(USER_ID_EXTRA);
         user = ParseObject.createWithoutData(User.class, userId);
@@ -155,8 +157,6 @@ public class MapsActivity extends AppCompatActivity implements
             }
         };
 
-        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-
         // fetch user and user's groups
         if (user.isDataAvailable()) {
             fetchGroups(findCallback);
@@ -171,6 +171,9 @@ public class MapsActivity extends AppCompatActivity implements
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
 
         if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
             throw new IllegalStateException("You forgot to supply a Google Maps API key");
@@ -181,9 +184,6 @@ public class MapsActivity extends AppCompatActivity implements
         //setup on onclick event for invite friends
 
 
-        drawerLayout = binding.drawerLayout;
-        drawerLayout.addDrawerListener(new DrawerListener());
-        nvView = binding.nvView;
         nvView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -214,8 +214,6 @@ public class MapsActivity extends AppCompatActivity implements
         inflater.inflate(R.menu.menu_home, menu);
 
         MenuItem miLocation = menu.findItem(R.id.miLocation);
-        //switchLocation = (SwitchCompat) miLocation.getActionView().findViewById(R.id.switchLocation);
-
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -231,6 +229,34 @@ public class MapsActivity extends AppCompatActivity implements
             handler.post(runnableCode);
         } else {
             Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+
+            case R.id.miInviteGroup:
+                showInviteToGroupDialog();
+                return true;
+
+            case R.id.miLocation:
+                showLocationSharingDialog();
+                return true;
+
+            case R.id.miLogout:
+//                ParseUser.logOut();
+
+                // start login activity
+//                ParseLoginBuilder builder = new ParseLoginBuilder(MapsActivity.this);
+//                startActivityForResult(builder.build(), 0);
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -462,34 +488,6 @@ public class MapsActivity extends AppCompatActivity implements
     };
 
 
-    private class DrawerListener implements DrawerLayout.DrawerListener {
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-
-        }
-
-        @Override
-        public void onDrawerOpened(View drawerView) {
-            Menu menu = nvView.getMenu();
-            menu.clear();
-
-            for (Group group : groups) {
-                menu.add(group.getName());
-            }
-            menu.getItem(selectedGroupIndex).setChecked(true);
-        }
-
-        @Override
-        public void onDrawerClosed(View drawerView) {
-
-        }
-
-        @Override
-        public void onDrawerStateChanged(int newState) {
-
-        }
-    }
-
     private void fetchGroups(FindCallback<Group> callback) {
         fetchUserIfNeeded();
         ParseQuery.getQuery(Group.class)
@@ -662,5 +660,47 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
+
+    private void showLocationSharingDialog() {
+        new MaterialDialog.Builder(MapsActivity.this)
+                .title(R.string.location_sharing)
+                .items(R.array.location_sharing_items)
+                .itemsCallbackSingleChoice(sharingEnabled ? 0 : 1, new MaterialDialog.ListCallbackSingleChoice() {
+                    @Override
+                    public boolean onSelection(MaterialDialog dialog, View itemView, int which,
+                                               CharSequence text) {
+                        return true;
+                    }
+                })
+                .positiveText("Save")
+                .negativeText("Cancel")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                        sharingEnabled = dialog.getSelectedIndex() == 0;
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
+    private void showInviteToGroupDialog() {
+        new MaterialDialog.Builder(MapsActivity.this)
+                .title(R.string.invite_code)
+                .content(getSelectedGroup().getInviteCode())
+                .positiveText("Done")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull final MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
 
 }

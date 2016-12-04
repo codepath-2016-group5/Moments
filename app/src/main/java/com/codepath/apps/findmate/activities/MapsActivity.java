@@ -255,8 +255,10 @@ public class MapsActivity extends AppCompatActivity implements
                 ParseUser.logOut();
 
                 // start login activity
-                ParseLoginBuilder builder = new ParseLoginBuilder(MapsActivity.this);
-                startActivityForResult(builder.build(), 0);
+                Intent intent = new ParseLoginBuilder(MapsActivity.this).build();
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
 
                 return true;
             default:

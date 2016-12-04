@@ -1,22 +1,15 @@
 package com.codepath.apps.findmate.activities;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,56 +21,22 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.client.FacebookClient;
+import com.codepath.apps.findmate.fragments.MapsFragment;
 import com.codepath.apps.findmate.models.Group;
-import com.codepath.apps.findmate.models.ParseUsers;
-import com.codepath.apps.findmate.utils.MapUtils;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.ErrorDialogFragment;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
-import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.ui.ParseLoginBuilder;
 
 import java.util.List;
 
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.RuntimePermissions;
-
-@RuntimePermissions
-public class MapsActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, OnMapReadyCallback,
-        NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MapsActivity";
-
-    private static long UPDATE_INTERVAL = 60000;  /* 60 secs */
-    private static long FASTEST_INTERVAL = 5000; /* 5 secs */
-
-    private final static int LOGIN_REQUEST = 1;
-    /*
-     * Define a request code to send to Google Play services This code is
-     * returned in Activity.onActivityResult
-     */
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private ParseUser user;
     private List<Group> groups;
@@ -86,40 +45,9 @@ public class MapsActivity extends AppCompatActivity implements
     private Integer selectedGroupIndex;
     private boolean sharingEnabled = true;
 
-    private SupportMapFragment mapFragment;
-    private GoogleMap map;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
-
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-
-    // Create the Handler object (on the main thread by default)
-    private Handler handler = new Handler();
-    // Define the code block to be executed
-    private Runnable refreshMap = new Runnable() {
-        @Override
-        public void run() {
-            Log.d("Handlers", "Refresh map called on the main thread");
-
-            // Do nothing if the user has no selected group
-            if (getSelectedGroup() == null) {
-                return;
-            }
-
-            Group.getGroupById(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
-                @Override
-                public void done(Group group, ParseException e) {
-                    if (map != null) {
-                        drawGroup(group, map);
-                    }
-                }
-            });
-
-            // Repeat this the same runnable code block again another 2 seconds
-            handler.postDelayed(refreshMap, 2000);
-        }
-    };
+    private MapsFragment mapsFragment;
 
     private FacebookClient fbClient = new FacebookClient();
 
@@ -148,29 +76,10 @@ public class MapsActivity extends AppCompatActivity implements
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
         nvView.setNavigationItemSelectedListener(this);
-        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-    }
-
-    @Override
-    public void onMapReady(GoogleMap map) {
-        this.map = map;
-
-        if (map != null) {
-            // Map is ready
-            Log.d(TAG, "Map Fragment was loaded properly!");
-            MapsActivityPermissionsDispatcher.getMyLocationWithCheck(this);
-        } else {
-            Log.e(TAG, "Could not load map fragment");
-            Toast.makeText(this, "Could not load map", Toast.LENGTH_SHORT).show();
-        }
 
         Group.getGroupsByUser(user, new FindCallback<Group>() {
             @Override
@@ -178,9 +87,13 @@ public class MapsActivity extends AppCompatActivity implements
                 MapsActivity.this.groups = groups;
                 MapsActivity.this.selectedGroupIndex = 0;
 
-                onGroupUpdated();
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                mapsFragment = MapsFragment.newInstance(
+                        groups.get(selectedGroupIndex).getObjectId());
+                ft.replace(R.id.flMaps, mapsFragment);
+                ft.commit();
 
-                handler.post(refreshMap);
+                onGroupUpdated();
             }
         });
     }
@@ -194,8 +107,7 @@ public class MapsActivity extends AppCompatActivity implements
         // Setup the menu
         initMenu(nvView.getMenu());
 
-        // Draw all of the members of the group
-        drawGroup(getSelectedGroup(), map);
+        mapsFragment.updateGroup(getSelectedGroup());
     }
 
     private void initMenu(Menu menu) {
@@ -210,21 +122,6 @@ public class MapsActivity extends AppCompatActivity implements
             if (getSelectedGroup() != null &&
                     group.getObjectId().equals(getSelectedGroup().getObjectId())) {
                 miGroup.setChecked(true);
-            }
-        }
-    }
-
-    private void drawGroup(Group group, GoogleMap map) {
-        // Clear the map
-        map.clear();
-
-        // Draw a marker for each member on the map
-        for (ParseUser member : group.getMembers()) {
-            if (ParseUsers.getLocation(member) != null) {
-                BitmapDescriptor icon = MapUtils.createBubble(MapsActivity.this,
-                        IconGenerator.STYLE_GREEN, member.getUsername());
-                MapUtils.addMarker(map, new LatLng(ParseUsers.getLocation(member).getLatitude(),
-                        ParseUsers.getLocation(member).getLongitude()), member.getUsername(), member.getUsername(),icon);
             }
         }
     }
@@ -282,190 +179,6 @@ public class MapsActivity extends AppCompatActivity implements
 
         return false;
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        MapsActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-    }
-
-    @SuppressWarnings("all")
-    @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    void getMyLocation() {
-        if (map != null) {
-            // Now that map has loaded, let's get our location!
-            map.setMyLocationEnabled(true);
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this).build();
-            connectClient();
-        }
-    }
-
-    protected void connectClient() {
-        // Connect the client.
-        if (isGooglePlayServicesAvailable() && googleApiClient != null) {
-            googleApiClient.connect();
-        }
-    }
-
-    /*
-     * Called when the Activity becomes visible.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        connectClient();
-    }
-
-    /*
-	 * Called when the Activity is no longer visible.
-	 */
-    @Override
-    protected void onStop() {
-        // Disconnecting the client invalidates it.
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
-        super.onStop();
-    }
-
-    /*
-     * Handle results returned to the FragmentActivity by Google Play services
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Decide what to do based on the original request code
-        switch (requestCode) {
-            case LOGIN_REQUEST:
-                user = ParseUser.getCurrentUser();
-                break;
-            case CONNECTION_FAILURE_RESOLUTION_REQUEST:
-			/*
-			 * If the result code is Activity.RESULT_OK, try to connect again
-			 */
-                switch (resultCode) {
-                    case Activity.RESULT_OK:
-                        googleApiClient.connect();
-                        break;
-                }
-
-        }
-    }
-
-    private boolean isGooglePlayServicesAvailable() {
-        // Check that Google Play services is available
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        // If Google Play services is available
-        if (ConnectionResult.SUCCESS == resultCode) {
-            // In debug mode, log the status
-            Log.d("Location Updates", "Google Play services is available.");
-            return true;
-        } else {
-            // Get the error dialog from Google Play services
-            Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-                    CONNECTION_FAILURE_RESOLUTION_REQUEST);
-
-            // If Google Play services can provide an error dialog
-            if (errorDialog != null) {
-                // Create a new DialogFragment for the error dialog
-                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
-                errorFragment.setDialog(errorDialog);
-                errorFragment.show(getSupportFragmentManager(), "Location Updates");
-            }
-
-            return false;
-        }
-    }
-
-    /*
-     * Called by Location Services when the request to connect the client
-     * finishes successfully. At this point, you can request the current
-     * location or start periodic updates
-     */
-    @Override
-    public void onConnected(Bundle dataBundle) {
-        // Display the connection status
-        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        if (location != null) {
-            // Toast.makeText(this, "GPS location was found!", Toast.LENGTH_SHORT).show();
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
-            map.animateCamera(cameraUpdate);
-        } else {
-            Toast.makeText(this, "Current location was null, enable GPS on emulator!", Toast.LENGTH_SHORT).show();
-        }
-        startLocationUpdates();
-    }
-
-    protected void startLocationUpdates() {
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        locationRequest.setInterval(UPDATE_INTERVAL);
-        locationRequest.setFastestInterval(FASTEST_INTERVAL);
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient,
-                locationRequest, this);
-    }
-
-    public void onLocationChanged(final Location location) {
-        // Log that the location was updated
-        String msg = "Updated Location: " +
-                Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
-        Log.d(TAG, msg);
-
-        // Send the updated location to the parse server
-        publishLocation(location);
-    }
-
-    private void publishLocation(Location location) {
-        ParseUsers.setLocation(user, new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
-        user.saveInBackground();
-    }
-
-    /*
-     * Called by Location Services if the connection to the location client
-     * drops because of an error.
-     */
-    @Override
-    public void onConnectionSuspended(int i) {
-        if (i == CAUSE_SERVICE_DISCONNECTED) {
-            Toast.makeText(this, "Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
-        } else if (i == CAUSE_NETWORK_LOST) {
-            Toast.makeText(this, "Network lost. Please re-connect.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /*
-     * Called by Location Services if the attempt to Location Services fails.
-     */
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-		/*
-		 * Google Play services can resolve some errors it detects. If the error
-		 * has a resolution, try sending an Intent to start a Google Play
-		 * services activity that can resolve error.
-		 */
-        if (connectionResult.hasResolution()) {
-            try {
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(this,
-                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
-				/*
-				 * Thrown if Google Play services canceled the original
-				 * PendingIntent
-				 */
-            } catch (IntentSender.SendIntentException e) {
-                // Log the error
-                e.printStackTrace();
-            }
-        } else {
-            Toast.makeText(getApplicationContext(),
-                    "Sorry. Location services not available to you", Toast.LENGTH_LONG).show();
-        }
-    }
-
     public void onCreateGroupClick(MenuItem item) {
         drawerLayout.closeDrawers();
 
@@ -613,29 +326,5 @@ public class MapsActivity extends AppCompatActivity implements
                     }
                 })
                 .show();
-    }
-
-    // Define a DialogFragment that displays the error dialog
-    public static class ErrorDialogFragment extends DialogFragment {
-
-        // Global field to contain the error dialog
-        private Dialog mDialog;
-
-        // Default constructor. Sets the dialog field to null
-        public ErrorDialogFragment() {
-            super();
-            mDialog = null;
-        }
-
-        // Set the dialog to display
-        public void setDialog(Dialog dialog) {
-            mDialog = dialog;
-        }
-
-        // Return a Dialog to the DialogFragment.
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            return mDialog;
-        }
     }
 }

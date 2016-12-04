@@ -60,8 +60,10 @@ dependencies {
 
     compile 'com.codepath.libraries:android-oauth-handler:1.1.0'
 
-    compile 'com.google.android.gms:play-services-maps:9.4.0'
-    compile 'com.google.android.gms:play-services-location:9.4.0'
+    compile 'com.google.android.gms:play-services-places:10.0.1'
+    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+
     compile 'com.github.hotchemi:permissionsdispatcher:2.2.0'
     compile 'com.google.maps.android:android-maps-utils:0.4+'
     apt 'com.github.hotchemi:permissionsdispatcher-processor:2.2.0'

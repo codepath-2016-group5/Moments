@@ -25,6 +25,8 @@ public class Group extends ParseObject {
     public static void getGroupsByUser(ParseUser user, FindCallback<Group> callback) {
         ParseQuery.getQuery(Group.class)
                 .include(Group.MEMBERS_KEY)
+                .include(Group.CHECK_INS_KEY)
+                .include("checkins.place")
                 .whereEqualTo(Group.MEMBERS_KEY, user)
                 .findInBackground(callback);
     }
@@ -32,6 +34,8 @@ public class Group extends ParseObject {
     public static void getGroupByInviteCode(String inviteCode, FindCallback<Group> callback) {
         ParseQuery.getQuery(Group.class)
                 .include(Group.MEMBERS_KEY)
+                .include(Group.CHECK_INS_KEY)
+                .include("checkins.place")
                 .whereEqualTo(Group.INVITE_KEY, inviteCode)
                 .findInBackground(callback);
     }
@@ -39,6 +43,8 @@ public class Group extends ParseObject {
     public static void getGroupById(String id, GetCallback<Group> callback) {
         ParseQuery.getQuery(Group.class)
                 .include(Group.MEMBERS_KEY)
+                .include(Group.CHECK_INS_KEY)
+                .include("checkins.place")
                 .getInBackground(id, callback);
     }
 

@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,20 +30,39 @@ import com.codepath.apps.findmate.fragments.MapsFragment;
 import com.codepath.apps.findmate.fragments.TimelineFragment;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.Group;
+import com.codepath.apps.findmate.models.ParseUsers;
+import com.codepath.apps.findmate.models.Place;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.maps.android.geometry.Bounds;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.ui.ParseLoginBuilder;
 
 import java.util.List;
 
-public class MapsActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import static com.codepath.apps.findmate.models.ParseUsers.getLocation;
+
+public class MapsActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MapsActivity";
+
+    private static int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
 
     private ParseUser user;
     private List<Group> groups;
@@ -56,6 +76,7 @@ public class MapsActivity extends AppCompatActivity
     private SmartFragmentStatePagerAdapter adapterViewPager;
     private ViewPager vpPager;
 
+    private GoogleApiClient googleApiClient;
     private FacebookClient fbClient = new FacebookClient();
 
     @Nullable
@@ -77,6 +98,13 @@ public class MapsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        googleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
 
         user = ParseUser.getCurrentUser();
 
@@ -189,6 +217,48 @@ public class MapsActivity extends AppCompatActivity
 
         return false;
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = Place.create(PlaceAutocomplete.getPlace(this, data));
+                Log.i(TAG, "Place: " + place.getName());
+
+                // FIXME : launch fragment to
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                // TODO: Handle the error.
+                Log.i(TAG, status.getStatusMessage());
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
+    }
+
+    public void onCheckInClick(View view) {
+        try {
+            PlaceAutocomplete.IntentBuilder builder = new PlaceAutocomplete.IntentBuilder(
+                    PlaceAutocomplete.MODE_FULLSCREEN);
+
+            // bias for locations near user's current location
+            ParseGeoPoint location = ParseUsers.getLocation(user);
+            if (location != null) {
+                builder.setBoundsBias(LatLngBounds.builder()
+                        .include(new LatLng(location.getLatitude(), location.getLongitude()))
+                        .build());
+            }
+
+            Intent intent = builder.build(this);
+            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+        } catch (GooglePlayServicesRepairableException e) {
+            // TODO: Handle the error.
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // TODO: Handle the error.
+        }
+    }
+
     public void onCreateGroupClick(MenuItem item) {
         drawerLayout.closeDrawers();
 
@@ -336,6 +406,11 @@ public class MapsActivity extends AppCompatActivity
                     }
                 })
                 .show();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
     private class PagerAdapter extends SmartFragmentStatePagerAdapter {

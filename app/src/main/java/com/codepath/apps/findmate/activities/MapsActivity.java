@@ -179,10 +179,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     private void initializeView() {
         //setup on onclick event for invite friends
-        binding.llInviteGroup.setOnClickListener(onInviteGroupListener);
-        binding.llCreateGroup.setOnClickListener(onCreateGroupListener);
-        binding.llJoinGroup.setOnClickListener(onJoinGroupListener);
-        binding.llInvite.setOnClickListener(onAppInviteListener);
+
 
         drawerLayout = binding.drawerLayout;
         drawerLayout.addDrawerListener(new DrawerListener());

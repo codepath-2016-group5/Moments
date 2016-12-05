@@ -70,33 +70,6 @@ public class MapsFragment extends Fragment implements
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
 
-    // Create the Handler object (on the main thread by default)
-    private Handler handler = new Handler();
-    // Define the code block to be executed
-    private Runnable refreshMap = new Runnable() {
-        @Override
-        public void run() {
-            Log.d("Handlers", "Refresh map called on the main thread");
-
-            // Do nothing if the user has no selected group
-            if (group == null) {
-                return;
-            }
-
-            Group.getGroupById(group.getObjectId(), new GetCallback<Group>() {
-                @Override
-                public void done(Group group, ParseException e) {
-                    if (map != null) {
-                        drawGroup(group, map);
-                    }
-                }
-            });
-
-            // Repeat this the same runnable code block again another 2 seconds
-            handler.postDelayed(refreshMap, 2000);
-        }
-    };
-
     public static MapsFragment newInstance() {
         return new MapsFragment();
     }

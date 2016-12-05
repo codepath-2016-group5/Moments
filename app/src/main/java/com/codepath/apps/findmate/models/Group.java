@@ -27,6 +27,7 @@ public class Group extends ParseObject {
                 .include(Group.MEMBERS_KEY)
                 .include(Group.CHECK_INS_KEY)
                 .include("checkins.place")
+                .include("checkins.creator")
                 .whereEqualTo(Group.MEMBERS_KEY, user)
                 .findInBackground(callback);
     }
@@ -36,6 +37,7 @@ public class Group extends ParseObject {
                 .include(Group.MEMBERS_KEY)
                 .include(Group.CHECK_INS_KEY)
                 .include("checkins.place")
+                .include("checkins.creator")
                 .whereEqualTo(Group.INVITE_KEY, inviteCode)
                 .findInBackground(callback);
     }
@@ -45,6 +47,7 @@ public class Group extends ParseObject {
                 .include(Group.MEMBERS_KEY)
                 .include(Group.CHECK_INS_KEY)
                 .include("checkins.place")
+                .include("checkins.creator")
                 .getInBackground(id, callback);
     }
 
@@ -92,4 +95,3 @@ public class Group extends ParseObject {
         return Integer.toString(100000 + RANDOM.nextInt(900000));
     }
 }
-

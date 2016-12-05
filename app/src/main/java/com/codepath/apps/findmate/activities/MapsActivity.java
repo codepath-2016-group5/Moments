@@ -2,6 +2,7 @@ package com.codepath.apps.findmate.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -45,12 +46,14 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.ui.ParseLoginBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements
@@ -77,8 +80,32 @@ public class MapsActivity extends AppCompatActivity implements
     private SmartFragmentStatePagerAdapter adapterViewPager;
     private ViewPager vpPager;
 
-    private GoogleApiClient googleApiClient;
-    private FacebookClient fbClient = new FacebookClient();
+    // Create the Handler object (on the main thread by default)
+    private Handler handler = new Handler();
+    // Define the code block to be executed
+    private Runnable refreshGroup = new Runnable() {
+        @Override
+        public void run() {
+            Log.i("Handler", "Refresh group called on the main thread");
+
+            // Do nothing if the user has no selected group
+            if (getSelectedGroup() == null) {
+                // Repeat this the same runnable code block again another 2 seconds
+                handler.postDelayed(refreshGroup, 2000);
+                return;
+            } else {
+                Group.getGroupById(getSelectedGroup().getObjectId(), new GetCallback<Group>() {
+                    @Override
+                    public void done(Group group, ParseException e) {
+                        onGroupUpdated();
+
+                        // Repeat this the same runnable code block again another 2 seconds
+                        handler.postDelayed(refreshGroup, 2000);
+                    }
+                });
+            }
+        }
+    };
 
     @Nullable
     private Group getSelectedGroup() {
@@ -100,14 +127,8 @@ public class MapsActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        googleApiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
-
         user = ParseUser.getCurrentUser();
+        groups = new ArrayList<>();
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
@@ -163,6 +184,18 @@ public class MapsActivity extends AppCompatActivity implements
                 miGroup.setChecked(true);
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        handler.post(refreshGroup);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        handler.removeCallbacks(refreshGroup);
     }
 
     @Override
@@ -245,12 +278,20 @@ public class MapsActivity extends AppCompatActivity implements
                 if (resultCode == RESULT_OK) {
                     String description = data.getStringExtra(CheckInActivity.DESCRIPTION_EXTRA);
                     CheckIn checkIn = new CheckIn()
+                            .setCreator(user)
                             .setDescription(description);
                     if (place != null) {
                         checkIn.setPlace(place);
                     }
+                    checkIn.saveInBackground();
+
                     getSelectedGroup().addCheckIn(checkIn);
-                    getSelectedGroup().saveInBackground();
+                    getSelectedGroup().saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            String s = "";
+                        }
+                    });
                 } else if (resultCode == RESULT_CANCELED) {
                     place = null;
                 }

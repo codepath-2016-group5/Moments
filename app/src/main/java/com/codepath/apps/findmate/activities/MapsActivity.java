@@ -275,19 +275,24 @@ public class MapsActivity extends AppCompatActivity implements
             case CHECK_IN_REQUEST_CODE: {
                 if (resultCode == RESULT_OK) {
                     String description = data.getStringExtra(CheckInActivity.DESCRIPTION_EXTRA);
-                    CheckIn checkIn = new CheckIn()
+                    final CheckIn checkIn = new CheckIn()
                             .setCreator(user)
                             .setDescription(description);
                     if (place != null) {
                         checkIn.setPlace(place);
                     }
-                    checkIn.saveInBackground();
 
-                    getSelectedGroup().addCheckIn(checkIn);
-                    getSelectedGroup().saveInBackground(new SaveCallback() {
+                    // Workaround for RuntimeException: only ACLs can be stored in the ACL key
+                    // https://github.com/ParsePlatform/Parse-SDK-Android/issues/499
+                    checkIn.saveInBackground(new SaveCallback() {
                         @Override
                         public void done(ParseException e) {
-                            String s = "";
+                            getSelectedGroup().addCheckIn(checkIn);
+                            getSelectedGroup().saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                }
+                            });
                         }
                     });
                 } else if (resultCode == RESULT_CANCELED) {

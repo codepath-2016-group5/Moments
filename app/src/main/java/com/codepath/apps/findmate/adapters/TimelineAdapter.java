@@ -1,12 +1,11 @@
 package com.codepath.apps.findmate.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,13 +14,13 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.ParseUsers;
-import com.google.common.base.Strings;
-import com.google.common.primitives.Chars;
 import com.parse.ParseUser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-
-import static android.R.attr.name;
+import java.util.Locale;
 
 public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHolder> {
 
@@ -54,6 +53,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
         CheckIn checkIn = checkIns.get(position);
 
         viewHolder.ivInitials.setImageDrawable(getInitialsDrawable(checkIn.getCreator()));
+        viewHolder.tvDate.setText(getRelativeTimeAgo(checkIn.getCreatedAt()));
         viewHolder.tvCreatorName.setText(ParseUsers.getName(checkIn.getCreator()));
         viewHolder.tvPlaceName.setText(checkIn.getPlace().getName());
         viewHolder.tvDescription.setText(checkIn.getDescription());
@@ -68,22 +68,30 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
     private TextDrawable getInitialsDrawable(ParseUser user) {
         String name = ParseUsers.getName(user);
         char initial = name.isEmpty() ? name.charAt(0) : user.getEmail().charAt(0);
-        char upperInitial = Character.toUpperCase(initial);
 
         ColorGenerator generator = ColorGenerator.MATERIAL;
-        int color = generator.getColor(name);
+        int color = generator.getColor(initial);
 
         TextDrawable.IBuilder builder = TextDrawable.builder()
                 .beginConfig()
                 .withBorder(4)
+                .toUpperCase()
                 .endConfig()
                 .round();
 
-        return builder.build(Character.toString(upperInitial), color);
+        return builder.build(Character.toString(initial), color);
+    }
+
+    // getRelativeTimeAgo("Mon Apr 01 21:16:23 +0000 2014");
+    private String getRelativeTimeAgo(Date date) {
+        long dateMillis = date.getTime();
+        return DateUtils.getRelativeTimeSpanString(dateMillis,
+                System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivInitials;
+        TextView tvDate;
         TextView tvCreatorName;
         TextView tvPlaceName;
         TextView tvDescription;
@@ -92,6 +100,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
             super(itemView);
 
             ivInitials = (ImageView) itemView.findViewById(R.id.ivInitials);
+            tvDate = (TextView) itemView.findViewById(R.id.tvDate);
             tvCreatorName = (TextView) itemView.findViewById(R.id.tvCreatorName);
             tvPlaceName = (TextView) itemView.findViewById(R.id.tvPlaceName);
             tvDescription = (TextView) itemView.findViewById(R.id.tvDescription);

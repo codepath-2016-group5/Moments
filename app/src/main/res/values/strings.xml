@@ -33,4 +33,7 @@
     <string name="google_geo_api_key">AIzaSyDhz3ZDjYR62QzFo-RnHnDMvWOCcB810OA</string>
     <string name="gcm_sender_id">id:761078236734</string>
 
+    <string name="check_in_description_hint">What are you up to?</string>
+    <string name="check_in">Check in</string>
+
 </resources>

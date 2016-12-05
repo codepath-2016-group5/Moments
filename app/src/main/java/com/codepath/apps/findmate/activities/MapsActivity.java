@@ -29,6 +29,7 @@ import com.codepath.apps.findmate.client.FacebookClient;
 import com.codepath.apps.findmate.fragments.MapsFragment;
 import com.codepath.apps.findmate.fragments.TimelineFragment;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
+import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.models.Place;
@@ -39,12 +40,10 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.maps.android.geometry.Bounds;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -54,15 +53,14 @@ import com.parse.ui.ParseLoginBuilder;
 
 import java.util.List;
 
-import static com.codepath.apps.findmate.models.ParseUsers.getLocation;
-
 public class MapsActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MapsActivity";
 
-    private static int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+    private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+    public static final int CHECK_IN_REQUEST_CODE = 2;
 
     private ParseUser user;
     private List<Group> groups;
@@ -70,6 +68,9 @@ public class MapsActivity extends AppCompatActivity implements
     @Nullable
     private Integer selectedGroupIndex;
     private boolean sharingEnabled = true;
+
+    // the place selected by the user
+    private Place place;
 
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
@@ -220,20 +221,43 @@ public class MapsActivity extends AppCompatActivity implements
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                Place place = Place.create(PlaceAutocomplete.getPlace(this, data));
-                Log.i(TAG, "Place: " + place.getName());
+        switch (requestCode) {
+            case PLACE_AUTOCOMPLETE_REQUEST_CODE: {
+                if (resultCode == RESULT_OK) {
+                    place = Place.create(PlaceAutocomplete.getPlace(this, data));
+                    Log.i(TAG, "Place: " + place.getName());
 
-                // FIXME : launch fragment to
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
-                Log.i(TAG, status.getStatusMessage());
+                    // Launch checkin activity to continue the flow
+                    Intent intent = new Intent(MapsActivity.this, CheckInActivity.class);
+                    startActivityForResult(intent, CHECK_IN_REQUEST_CODE);
+                } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                    Status status = PlaceAutocomplete.getStatus(this, data);
+                    Log.e(TAG, status.getStatusMessage());
+                    Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_LONG).show();
+                } else if (resultCode == RESULT_CANCELED) {
+                    // The user canceled the operation.
+                    // Do nothing
+                }
 
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
+                break;
             }
+            case CHECK_IN_REQUEST_CODE: {
+                if (resultCode == RESULT_OK) {
+                    String description = data.getStringExtra(CheckInActivity.DESCRIPTION_EXTRA);
+                    CheckIn checkIn = new CheckIn()
+                            .setDescription(description);
+                    if (place != null) {
+                        checkIn.setPlace(place);
+                    }
+                    getSelectedGroup().addCheckIn(checkIn);
+                    getSelectedGroup().saveInBackground();
+                } else if (resultCode == RESULT_CANCELED) {
+                    place = null;
+                }
+                break;
+            }
+            default:
+                break;
         }
     }
 

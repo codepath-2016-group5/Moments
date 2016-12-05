@@ -9,6 +9,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -67,7 +68,8 @@ public class Group extends ParseObject {
     }
 
     public List<CheckIn> getCheckIns() {
-        return getList(CHECK_INS_KEY);
+        List<CheckIn> checkIns = getList(CHECK_INS_KEY);
+        return checkIns == null ? new ArrayList<CheckIn>() : checkIns;
     }
 
     public Group setName(String name) {

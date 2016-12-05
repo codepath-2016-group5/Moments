@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.CheckIn;
+import com.codepath.apps.findmate.models.ParseUsers;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
     public void onBindViewHolder(TimelineAdapter.ViewHolder viewHolder, int position) {
         CheckIn checkIn = checkIns.get(position);
 
-        viewHolder.tvCreatorName.setText(checkIn.getCreator().getUsername());
+        viewHolder.tvCreatorName.setText(ParseUsers.getName(checkIn.getCreator()));
         viewHolder.tvPlaceName.setText(checkIn.getPlace().getName());
         viewHolder.tvDescription.setText(checkIn.getDescription());
     }

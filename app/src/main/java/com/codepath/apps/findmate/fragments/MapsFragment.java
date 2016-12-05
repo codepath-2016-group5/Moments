@@ -132,10 +132,7 @@ public class MapsFragment extends Fragment implements
         // Draw a marker for each member on the map
         for (ParseUser member : group.getMembers()) {
             if (ParseUsers.getLocation(member) != null) {
-                BitmapDescriptor icon = MapUtils.createBubble(getContext(),
-                        IconGenerator.STYLE_GREEN, member.getUsername());
-                MapUtils.addMarker(map, new LatLng(ParseUsers.getLocation(member).getLatitude(),
-                        ParseUsers.getLocation(member).getLongitude()), member.getUsername(), member.getUsername(),icon);
+                MapUtils.addMarker(getContext(), map, user);
             }
         }
     }

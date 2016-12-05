@@ -19,13 +19,19 @@ import com.parse.ParseUser;
  */
 public class ParseUsers {
 
-    private static final String LOCATION = "location";
+    private static final String LOCATION_KEY = "location";
+    private static final String NAME_KEY = "name";
 
     public static ParseGeoPoint getLocation(ParseUser user) {
-        return user.getParseGeoPoint(LOCATION);
+        return user.getParseGeoPoint(LOCATION_KEY);
     }
 
     public static void setLocation(ParseUser user, ParseGeoPoint location) {
-        user.put(LOCATION, location);
+        user.put(LOCATION_KEY, location);
+    }
+
+    public static String getName(ParseUser user) {
+        return user.getString(NAME_KEY
+        );
     }
 }

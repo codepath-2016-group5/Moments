@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_margin="16dp"
-            android:src="@android:drawable/ic_menu_add"
+            android:src="@drawable/location"
             app:layout_anchor="@id/rlMaps"
             app:layout_anchorGravity="bottom|right|end"
             android:onClick="onCheckInClick"/>

@@ -6,7 +6,6 @@
     android:layout_height="wrap_content"
     card_view:cardUseCompatPadding="true"
     card_view:cardPreventCornerOverlap="false"
-    card_view:contentPadding="3dp"
     card_view:cardBackgroundColor="#FFFFFF"
     android:foreground="?android:attr/selectableItemBackground">
 
@@ -43,6 +42,7 @@
                         android:id="@+id/tvCreatorName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="@color/textSecondary"
                         style="@style/Base.TextAppearance.AppCompat.Title"
                         android:layout_marginBottom="8dp"
                         android:layout_gravity="left"
@@ -58,6 +58,8 @@
                         android:layout_marginLeft="4dp"
                         android:textAlignment="viewEnd"
                         android:layout_alignParentEnd="true"
+                        android:textSize="10sp"
+                        android:textColor="@color/textSecondary"
                         android:layout_weight="0.3"
                         />
 
@@ -68,6 +70,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/Base.TextAppearance.AppCompat.Body2"
+                    android:textColor="@color/textSecondary"
                     android:layout_marginBottom="8dp"/>
 
                 <TextView
@@ -75,6 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/Base.TextAppearance.AppCompat.Body1"
+                    android:textColor="@color/textSecondary"
                     android:layout_marginBottom="8dp"
                     android:textStyle="italic"/>
             </LinearLayout>

@@ -20,6 +20,8 @@ import com.parse.GetCallback;
 import com.parse.ParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TimelineFragment extends Fragment implements ViewPagerFragment {
@@ -68,7 +70,30 @@ public class TimelineFragment extends Fragment implements ViewPagerFragment {
     public void onGroupUpdated(Group group) {
         this.group = group;
         checkIns.clear();
+
+
         checkIns.addAll(group.getCheckIns());
+
+        Collections.sort(checkIns, new TimelineSort());
+
         adapter.notifyDataSetChanged();
+    }
+
+    class TimelineSort implements Comparator<CheckIn> {
+
+        @Override
+        public int compare(CheckIn checkIn1, CheckIn checkIn2) {
+            if(checkIn2.getCreatedAt().after(checkIn1.getCreatedAt())) {
+                return 1;
+            } else {
+                return -1;
+            }
+
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return false;
+        }
     }
 }

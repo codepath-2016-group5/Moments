@@ -1,5 +1,6 @@
 package com.codepath.apps.findmate.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -137,11 +138,13 @@ public class MapsActivity extends AppCompatActivity implements
         getSupportActionBar().setHomeButtonEnabled(true);
 
         vpPager = (ViewPager) findViewById(R.id.vpPager);
-        adapterViewPager = new PagerAdapter(getSupportFragmentManager());
+        adapterViewPager = new PagerAdapter(this, getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(vpPager);
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_map);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_home);
 
         Group.getGroupsByUser(user, new FindCallback<Group>() {
             @Override
@@ -482,10 +485,13 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     private class PagerAdapter extends SmartFragmentStatePagerAdapter {
-        private int NUM_ITEMS = 2;
 
-        private PagerAdapter(FragmentManager fragmentManager) {
+        private int NUM_ITEMS = 2;
+        private Context context;
+
+        private PagerAdapter(Context context, FragmentManager fragmentManager) {
             super(fragmentManager);
+            this.context = context;
         }
 
         // Returns total number of pages
@@ -494,7 +500,7 @@ public class MapsActivity extends AppCompatActivity implements
             return NUM_ITEMS;
         }
 
-        // Returns the fragment to display for that page
+        // Returns the fragment to display for that pageØ
         @Override
         public Fragment getItem(int position) {
             switch (position) {
@@ -504,19 +510,6 @@ public class MapsActivity extends AppCompatActivity implements
                     return TimelineFragment.newInstance();
                 default:
                     return null;
-            }
-        }
-
-        // Returns the page title for the top indicator
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Map";
-                case 1:
-                    return "Timeline";
-                default:
-                    return "";
             }
         }
     }

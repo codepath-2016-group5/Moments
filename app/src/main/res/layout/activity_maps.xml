@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_margin="16dp"
-            android:src="@drawable/location"
+            android:src="@drawable/ic_location"
             app:layout_anchorGravity="bottom|right|end"
             android:onClick="onCheckInClick"/>
 

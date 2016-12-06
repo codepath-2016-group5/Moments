@@ -33,7 +33,7 @@
     <application
         android:name=".application.FindMateApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_location_drop"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">

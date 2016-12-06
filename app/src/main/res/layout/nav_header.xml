@@ -5,10 +5,4 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:orientation="vertical"
     android:gravity="bottom">
-    <ImageView
-        android:id="@+id/ivHeader"
-        android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:src="@drawable/header"
-        android:scaleType="centerCrop" />
 </LinearLayout>

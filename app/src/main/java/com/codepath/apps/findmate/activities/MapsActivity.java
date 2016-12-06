@@ -143,8 +143,8 @@ public class MapsActivity extends AppCompatActivity implements
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(vpPager);
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_home);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_map);
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_map);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_home);
 
         Group.getGroupsByUser(user, new FindCallback<Group>() {
             @Override

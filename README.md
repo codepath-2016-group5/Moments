@@ -1,7 +1,8 @@
-# FindMate
+# Moments
 
-We often visit places/sites and often don't post the location. Sometimes your friend or relative is in the same place and you didn't know about it.
-This app helps you in finding your friend/relative if they happen to be in same place at the same time, just by turning on your visibility.
+With our busy lives, we often lose track of where our loved ones are and what they are doing.
+Moments is an app that allows close circles of friends and family to share their location and
+check-in with each other.
 
 ![Walkthrough](walkthrough.gif)
 
@@ -9,25 +10,19 @@ This app helps you in finding your friend/relative if they happen to be in same 
 
 The following **required** functionality is completed:
 
-* [x] The app includes **all required user stories**
-* [x] User can **login via Facebook/Twitter**
-  * [x] User gets authenticated via FB/Twitter
-  * [x] Use **location service**
-* [x] Invite Friends
-* [x] Create Groups
-* [x] Join Groups and Invite to Group
-* [x] User publishes location on map
+* [x] Login and signup
+* [x] Create group
+* [x] Invite members to group
+* [x] Join group
+* [x] Publish current location
+* [x] Check-in with a location and comment
+* [x] View check-ins and current locations on map
+* [x] View check-ins in list
 
-**Optional**
-* [ ] User can **search for activities**
-  * [x] User can see list of events at near by location
-* [ ] User can create events
- * [ ] Events creation include location, type, name, time
-* [ ] User can change **settings** in settings menu.
- * [ ] Include settings like location, events etc
-
-<img src='./image1.JPG' />
-<img src='./image2.JPG' />
-<img src='./image3.JPG' />
-<img src='./image4.JPG' />
-
+**More ideas**
+* [ ] Add picture to check-in
+* [ ] Add places to each group; automatically generate check-in when user is nearby
+* [ ] Use long-polling / websockets instead of polling for updates
+* [ ] Improve onboarding flow
+* [ ] Improve invite flow with deeplinks or share intents
+* [ ] Notifications

@@ -81,26 +81,8 @@ public class TimelineFragment extends Fragment implements ViewPagerFragment {
 
         checkIns.addAll(group.getCheckIns());
 
-        Collections.sort(checkIns, new TimelineSort());
+        Collections.reverse(checkIns);
 
         adapter.notifyDataSetChanged();
-    }
-
-    class TimelineSort implements Comparator<CheckIn> {
-
-        @Override
-        public int compare(CheckIn checkIn1, CheckIn checkIn2) {
-            if(checkIn2.getCreatedAt().after(checkIn1.getCreatedAt())) {
-                return 1;
-            } else {
-                return -1;
-            }
-
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return false;
-        }
     }
 }

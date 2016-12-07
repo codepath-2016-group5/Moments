@@ -34,6 +34,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterManager;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
@@ -63,6 +64,7 @@ public class MapsFragment extends Fragment implements
     private SupportMapFragment mapFragment;
 
     private GoogleMap map;
+    private ClusterManager<MapUtils.MarkerItem> clusterManager;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
 
@@ -103,12 +105,21 @@ public class MapsFragment extends Fragment implements
             // Map is ready
             Log.d(TAG, "Map Fragment was loaded properly!");
             MapsFragmentPermissionsDispatcher.getMyLocationWithCheck(this);
+            setUpClusterer();
         } else {
             Log.e(TAG, "Could not load map fragment");
             Toast.makeText(getActivity(), "Could not load map", Toast.LENGTH_SHORT).show();
         }
 
         drawGroup(group, MapsFragment.this.map);
+    }
+
+    private void setUpClusterer() {
+        clusterManager = new ClusterManager<MapUtils.MarkerItem>(getActivity(), map);
+        clusterManager.setRenderer(new MapUtils.MarkerItemRenderer(getActivity(), map, clusterManager));
+
+        // Point the map's listeners at the listeners implemented by the cluster manager.
+        map.setOnCameraIdleListener(clusterManager);
     }
 
     @Override
@@ -123,19 +134,23 @@ public class MapsFragment extends Fragment implements
         }
 
         // Clear the map
-        map.clear();
+        clusterManager.clearItems();
 
         // Draw a marker for each member on the map
         for (ParseUser member : group.getMembers()) {
             if (ParseUsers.getLocation(member) != null) {
-                MapUtils.addUserMarker(getContext(), map, user);
+                clusterManager.addItem(new MapUtils.MarkerItem(member));
+                // MapUtils.addUserMarker(getContext(), map, user);
             }
         }
 
         // Draw a marker for each check-in in a group
         for (CheckIn checkIn : group.getCheckIns()) {
-            MapUtils.addCheckInMarker(getContext(), map, checkIn);
+            clusterManager.addItem(new MapUtils.MarkerItem(checkIn));
+            // MapUtils.addCheckInMarker(getContext(), map, checkIn);
         }
+
+        clusterManager.cluster();
     }
 
     @Override

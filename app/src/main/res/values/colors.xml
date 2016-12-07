@@ -10,6 +10,10 @@
     <color name="white">#FFFFFF</color>
     <color name="red">#FF0000</color>
     <color name="lightGray">#D3D3D3</color>
-    <color name="cardBackground">#b3e4e1</color>
+    <color name="themeColor">#44bfec</color>
+
+    <color name="tabBG">#FF4081</color>
 
 </resources>
+
+

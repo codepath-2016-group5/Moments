@@ -16,6 +16,7 @@ import com.codepath.apps.findmate.adapters.TimelineAdapter;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
+import com.codepath.apps.findmate.utils.DividerItemDecoration;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 
@@ -63,6 +64,12 @@ public class TimelineFragment extends Fragment implements ViewPagerFragment {
 
         adapter = new TimelineAdapter(getActivity(), checkIns);
         rvCheckIns.setAdapter(adapter);
+
+
+        RecyclerView.ItemDecoration itemDecoration = new
+                DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL_LIST);
+        rvCheckIns.addItemDecoration(itemDecoration);
+
         rvCheckIns.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 

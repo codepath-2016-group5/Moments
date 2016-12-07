@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    card_view:cardUseCompatPadding="true"
-    card_view:cardPreventCornerOverlap="false"
-    card_view:cardBackgroundColor="#FFFFFF"
-    android:foreground="?android:attr/selectableItemBackground">
 
         <RelativeLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
@@ -22,8 +14,8 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_alignParentStart="true"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -44,7 +36,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/textSecondary"
                         style="@style/Base.TextAppearance.AppCompat.Title"
-                        android:layout_marginBottom="8dp"
+                        android:layout_marginBottom="3dp"
                         android:layout_gravity="left"
                         android:layout_weight="0.7"
                         />
@@ -54,11 +46,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Base.TextAppearance.AppCompat.Subhead"
-                        android:layout_marginBottom="8dp"
+                        android:layout_marginBottom="3dp"
                         android:layout_marginLeft="4dp"
                         android:textAlignment="viewEnd"
                         android:layout_alignParentEnd="true"
-                        android:textSize="10sp"
                         android:textColor="@color/textSecondary"
                         android:layout_weight="0.3"
                         />
@@ -71,7 +62,7 @@
                     android:layout_height="wrap_content"
                     style="@style/Base.TextAppearance.AppCompat.Body2"
                     android:textColor="@color/textSecondary"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="3dp"/>
 
                 <TextView
                     android:id="@+id/tvDescription"
@@ -79,9 +70,8 @@
                     android:layout_height="wrap_content"
                     style="@style/Base.TextAppearance.AppCompat.Body1"
                     android:textColor="@color/textSecondary"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="3dp"
                     android:textStyle="italic"/>
             </LinearLayout>
 
         </RelativeLayout>
-    </android.support.v7.widget.CardView>

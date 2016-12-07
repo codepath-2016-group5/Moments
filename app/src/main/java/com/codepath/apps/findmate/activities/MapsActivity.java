@@ -251,7 +251,7 @@ public class MapsActivity extends AppCompatActivity implements
                 ParseUser.logOut();
 
                 // start login activity
-                Intent intent = new ParseLoginBuilder(MapsActivity.this).build();
+                Intent intent = new Intent(this, DispatchActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();

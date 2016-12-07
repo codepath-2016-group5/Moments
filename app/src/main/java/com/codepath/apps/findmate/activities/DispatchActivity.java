@@ -17,7 +17,7 @@ import com.parse.ui.ParseLoginBuilder;
  */
 public class DispatchActivity extends Activity {
 
-    private final int SPLASH_DISPLAY_LENGTH = 1000;
+    private final int SPLASH_DISPLAY_LENGTH = 600;
 
     protected Class<?> getTargetClass() {
         return MapsActivity.class;

@@ -1,7 +1,7 @@
 package com.codepath.apps.findmate.activities;
 
-import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -10,9 +10,9 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -77,6 +77,7 @@ public class MapsActivity extends AppCompatActivity implements
     // the place selected by the user
     private Place place;
 
+    private ActionBarDrawerToggle drawerToggle;
     private NavigationView nvView;
     private DrawerLayout drawerLayout;
     private SmartFragmentStatePagerAdapter adapterViewPager;
@@ -145,8 +146,11 @@ public class MapsActivity extends AppCompatActivity implements
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
+        drawerToggle = setupDrawerToggle(toolbar);
+        drawerLayout.addDrawerListener(drawerToggle);
+
         vpPager = (ViewPager) findViewById(R.id.vpPager);
-        adapterViewPager = new PagerAdapter(this, getSupportFragmentManager());
+        adapterViewPager = new PagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
@@ -174,6 +178,11 @@ public class MapsActivity extends AppCompatActivity implements
         ivNavProfile.setImageDrawable(DrawableUtils.getInitialsDrawable(user));
         tvNavName.setText(ParseUsers.getName(user));
         tvNavEmail.setText(user.getEmail());
+    }
+
+    private ActionBarDrawerToggle setupDrawerToggle(Toolbar toolbar) {
+        return new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,
+                R.string.drawer_close);
     }
 
     private void onGroupUpdated() {
@@ -229,7 +238,7 @@ public class MapsActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                drawerLayout.openDrawer(GravityCompat.START);
+                drawerToggle.onOptionsItemSelected(item);
                 return true;
 
             case R.id.miInviteGroup:
@@ -325,6 +334,24 @@ public class MapsActivity extends AppCompatActivity implements
             default:
                 break;
         }
+    }
+
+    // `onPostCreate` called when activity start-up is complete after `onStart()`
+    // NOTE 1: Make sure to override the method with only a single `Bundle` argument
+    // Note 2: Make sure you implement the correct `onPostCreate(Bundle savedInstanceState)` method.
+    // There are 2 signatures and only `onPostCreate(Bundle state)` shows the hamburger icon.
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        drawerToggle.onConfigurationChanged(newConfig);
     }
 
     public void onCheckInClick(View view) {
@@ -506,11 +533,9 @@ public class MapsActivity extends AppCompatActivity implements
     private class PagerAdapter extends SmartFragmentStatePagerAdapter {
 
         private int NUM_ITEMS = 2;
-        private Context context;
 
-        private PagerAdapter(Context context, FragmentManager fragmentManager) {
+        private PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
-            this.context = context;
         }
 
         // Returns total number of pages

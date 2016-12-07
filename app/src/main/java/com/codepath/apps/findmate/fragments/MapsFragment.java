@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
+import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.utils.MapUtils;
@@ -33,11 +33,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.ui.IconGenerator;
-import com.parse.GetCallback;
-import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
@@ -132,8 +128,13 @@ public class MapsFragment extends Fragment implements
         // Draw a marker for each member on the map
         for (ParseUser member : group.getMembers()) {
             if (ParseUsers.getLocation(member) != null) {
-                MapUtils.addMarker(getContext(), map, user);
+                MapUtils.addUserMarker(getContext(), map, user);
             }
+        }
+
+        // Draw a marker for each check-in in a group
+        for (CheckIn checkIn : group.getCheckIns()) {
+            MapUtils.addCheckInMarker(getContext(), map, checkIn);
         }
     }
 

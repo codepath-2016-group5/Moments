@@ -9,18 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.ParseUsers;
-import com.parse.ParseUser;
+import com.codepath.apps.findmate.utils.DrawableUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHolder> {
 
@@ -52,7 +47,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
     public void onBindViewHolder(TimelineAdapter.ViewHolder viewHolder, int position) {
         CheckIn checkIn = checkIns.get(position);
 
-        viewHolder.ivInitials.setImageDrawable(getInitialsDrawable(checkIn.getCreator()));
+        viewHolder.ivInitials.setImageDrawable(DrawableUtils.getInitialsDrawable(checkIn.getCreator()));
         viewHolder.tvDate.setText(getRelativeTimeAgo(checkIn.getCreatedAt()));
         viewHolder.tvCreatorName.setText(ParseUsers.getName(checkIn.getCreator()));
         viewHolder.tvPlaceName.setText(checkIn.getPlace().getName());
@@ -63,23 +58,6 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
     @Override
     public int getItemCount() {
         return checkIns.size();
-    }
-
-    private TextDrawable getInitialsDrawable(ParseUser user) {
-        String name = ParseUsers.getName(user);
-        char initial = name.isEmpty() ? name.charAt(0) : user.getEmail().charAt(0);
-
-        ColorGenerator generator = ColorGenerator.MATERIAL;
-        int color = generator.getColor(initial);
-
-        TextDrawable.IBuilder builder = TextDrawable.builder()
-                .beginConfig()
-                .withBorder(4)
-                .toUpperCase()
-                .endConfig()
-                .round();
-
-        return builder.build(Character.toString(initial), color);
     }
 
     // getRelativeTimeAgo("Mon Apr 01 21:16:23 +0000 2014");

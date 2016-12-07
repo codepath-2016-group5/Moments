@@ -21,6 +21,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -34,6 +36,7 @@ import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.models.Place;
+import com.codepath.apps.findmate.utils.DrawableUtils;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
@@ -117,6 +120,9 @@ public class MapsActivity extends AppCompatActivity implements
                 return groups.get(selectedGroupIndex);
             }
         } else {
+            if (groups == null) {
+                groups = new ArrayList<>();
+            }
             return groups.get(selectedGroupIndex);
         }
     }
@@ -132,6 +138,8 @@ public class MapsActivity extends AppCompatActivity implements
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         nvView = (NavigationView) findViewById(R.id.nvView);
         nvView.setNavigationItemSelectedListener(this);
+        setupNavHeader();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.maps_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -155,6 +163,17 @@ public class MapsActivity extends AppCompatActivity implements
                 onGroupUpdated();
             }
         });
+    }
+
+    private void setupNavHeader() {
+        View headerView = nvView.getHeaderView(0);
+        ImageView ivNavProfile = (ImageView) headerView.findViewById(R.id.ivNavProfile);
+        TextView tvNavName = (TextView) headerView.findViewById(R.id.tvNavName);
+        TextView tvNavEmail = (TextView) headerView.findViewById(R.id.tvNavEmail);
+
+        ivNavProfile.setImageDrawable(DrawableUtils.getInitialsDrawable(user));
+        tvNavName.setText(ParseUsers.getName(user));
+        tvNavEmail.setText(user.getEmail());
     }
 
     private void onGroupUpdated() {

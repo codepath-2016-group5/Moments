@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -34,6 +35,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
@@ -104,6 +106,20 @@ public class MapsFragment extends Fragment implements
         if (map != null) {
             // Map is ready
             Log.d(TAG, "Map Fragment was loaded properly!");
+
+            try {
+                // Customise the styling of the base map using a JSON object defined
+                // in a raw resource file.
+                boolean success = map.setMapStyle(
+                        MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_retro));
+
+                if (!success) {
+                    Log.e(TAG, "Style parsing failed.");
+                }
+            } catch (Resources.NotFoundException e) {
+                Log.e(TAG, "Can't find style. Error: ", e);
+            }
+
             MapsFragmentPermissionsDispatcher.getMyLocationWithCheck(this);
             setUpClusterer();
         } else {

@@ -1,5 +1,7 @@
 package com.codepath.apps.findmate.activities;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -31,6 +34,7 @@ import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.adapters.SmartFragmentStatePagerAdapter;
 import com.codepath.apps.findmate.fragments.MapsFragment;
 import com.codepath.apps.findmate.fragments.TimelineFragment;
+import com.codepath.apps.findmate.interfaces.NotifyActivity;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
@@ -58,7 +62,7 @@ import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, NotifyActivity {
 
     private static final String TAG = "MapsActivity";
 
@@ -518,6 +522,8 @@ public class MapsActivity extends AppCompatActivity implements
 
     }
 
+
+
     private class PagerAdapter extends SmartFragmentStatePagerAdapter {
 
         private int NUM_ITEMS = 2;
@@ -544,5 +550,22 @@ public class MapsActivity extends AppCompatActivity implements
                     return null;
             }
         }
+    }
+
+    private void createNotification(int nId, int iconRes, String title, String body) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+                this).setSmallIcon(iconRes)
+                .setContentTitle(title)
+                .setContentText(body);
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(nId, mBuilder.build());
+    }
+
+    @Override
+    public void notifyUser(String user, String location) {
+        createNotification(1, R.drawable.ic_location_drop, "Check-in from "+user, location);
     }
 }

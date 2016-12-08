@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.adapters.TimelineAdapter;
+import com.codepath.apps.findmate.interfaces.NotifyActivity;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
@@ -76,10 +77,20 @@ public class TimelineFragment extends Fragment implements ViewPagerFragment {
     @Override
     public void onGroupUpdated(Group group) {
         this.group = group;
+
+
+        List<CheckIn> newCheckins = group.getCheckIns();
+        if(newCheckins.size() > checkIns.size()) {
+            for(int i=0; i<(newCheckins.size()-checkIns.size()); i++) {
+                CheckIn checkin = newCheckins.get(i);
+                String name = (String)checkin.getCreator().get("name");
+                ((NotifyActivity)this.getActivity()).notifyUser(name, checkin.getPlace().getAddress());
+            }
+        }
+
         checkIns.clear();
 
-
-        checkIns.addAll(group.getCheckIns());
+        checkIns.addAll(newCheckins);
 
         Collections.reverse(checkIns);
 

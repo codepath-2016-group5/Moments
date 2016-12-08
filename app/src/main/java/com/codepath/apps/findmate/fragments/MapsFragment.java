@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.codepath.apps.findmate.R;
+import com.codepath.apps.findmate.interfaces.NotifyActivity;
 import com.codepath.apps.findmate.interfaces.ViewPagerFragment;
 import com.codepath.apps.findmate.models.CheckIn;
 import com.codepath.apps.findmate.models.Group;
@@ -39,6 +40,9 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
@@ -62,6 +66,7 @@ public class MapsFragment extends Fragment implements
 
     private ParseUser user;
     private Group group;
+    private List<CheckIn> checkIns = new ArrayList<>();
 
     private SupportMapFragment mapFragment;
 
@@ -140,7 +145,23 @@ public class MapsFragment extends Fragment implements
 
     @Override
     public void onGroupUpdated(Group group) {
+        List<CheckIn> newCheckins = group.getCheckIns();
+
+
+        if(newCheckins.size() > checkIns.size()) {
+            for(int i=0; i<(newCheckins.size()-checkIns.size()); i++) {
+                CheckIn checkin = newCheckins.get(i);
+                String name = (String)checkin.getCreator().get("name");
+                ((NotifyActivity)this.getActivity()).notifyUser(name, checkin.getPlace().getAddress());
+            }
+        }
+
+
         MapsFragment.this.group = group;
+
+        checkIns.clear();
+        checkIns.addAll(newCheckins);
+
         drawGroup(group, map);
     }
 

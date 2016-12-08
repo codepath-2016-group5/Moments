@@ -4,7 +4,7 @@ With our busy lives, we often lose track of where our loved ones are and what th
 Moments is an app that allows close circles of friends and family to share their location and
 check-in with each other.
 
-![Walkthrough](walkthrough.gif)
+![Walkthrough](http://2.sendvid.com/4gq2ky0v.mp4)
 
 ## User Stories
 

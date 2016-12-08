@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/miCheckIn"
+        android:title="@string/check_in"
+        android:icon="@drawable/check_mark"
+        app:showAsAction="ifRoom|collapseActionView"/>
+
+</menu>

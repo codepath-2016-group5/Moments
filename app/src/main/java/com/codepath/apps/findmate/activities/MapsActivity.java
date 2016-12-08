@@ -291,6 +291,9 @@ public class MapsActivity extends AppCompatActivity implements
 
                     // Launch checkin activity to continue the flow
                     Intent intent = new Intent(MapsActivity.this, CheckInActivity.class);
+                    intent.putExtra("ADDRESS", place.getAddress());
+                    intent.putExtra("LAT", place.getLocation().getLatitude());
+                    intent.putExtra("LONG", place.getLocation().getLongitude());
                     startActivityForResult(intent, CHECK_IN_REQUEST_CODE);
                 } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                     Status status = PlaceAutocomplete.getStatus(this, data);

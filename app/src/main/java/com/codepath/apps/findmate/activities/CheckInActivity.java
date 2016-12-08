@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import com.codepath.apps.findmate.R;
 import com.codepath.apps.findmate.fragments.CheckInFragment;
@@ -38,6 +41,11 @@ public class CheckInActivity extends AppCompatActivity implements CheckInFragmen
             case android.R.id.home:
                 finishActivityWithCanceled();
                 return true;
+
+            case R.id.miCheckIn:
+                EditText etDescription = (EditText) findViewById(R.id.etDescription);
+                onCheckInClick(etDescription.getText().toString());
+                return true;
         }
 
         return false;
@@ -61,5 +69,12 @@ public class CheckInActivity extends AppCompatActivity implements CheckInFragmen
         Intent data = new Intent();
         setResult(RESULT_CANCELED, data);
         finish();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_check_in, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 }

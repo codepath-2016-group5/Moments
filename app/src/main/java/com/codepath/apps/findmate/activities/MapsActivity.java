@@ -123,8 +123,8 @@ public class MapsActivity extends AppCompatActivity implements
                 return groups.get(selectedGroupIndex);
             }
         } else {
-            if (groups == null) {
-                groups = new ArrayList<>();
+            if (groups == null || selectedGroupIndex >= groups.size()) {
+                return null;
             }
             return groups.get(selectedGroupIndex);
         }

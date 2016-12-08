@@ -6,10 +6,6 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.HttpMethod;
 
-/**
- * Created by mdathrika on 11/12/16.
- */
-
 public class FacebookClient {
 
     public void getProfilePic(String userId, GraphRequest.Callback callback) {

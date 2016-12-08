@@ -37,8 +37,6 @@ import com.codepath.apps.findmate.models.Group;
 import com.codepath.apps.findmate.models.ParseUsers;
 import com.codepath.apps.findmate.models.Place;
 import com.codepath.apps.findmate.utils.DrawableUtils;
-import com.facebook.share.model.AppInviteContent;
-import com.facebook.share.widget.AppInviteDialog;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -253,7 +251,7 @@ public class MapsActivity extends AppCompatActivity implements
                 ParseUser.logOut();
 
                 // start login activity
-                Intent intent = new ParseLoginBuilder(MapsActivity.this).build();
+                Intent intent = new Intent(this, DispatchActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
@@ -471,19 +469,6 @@ public class MapsActivity extends AppCompatActivity implements
                     }
                 })
                 .show();
-    }
-
-    public void onInviteToAppClick(MenuItem item) {
-        drawerLayout.closeDrawers();
-
-        // open facebook app invite dialog.
-        if (AppInviteDialog.canShow()) {
-            AppInviteContent content = new AppInviteContent.Builder()
-                    .setApplinkUrl(getString(R.string.fb_app_link))
-                    .setPreviewImageUrl(getString(R.string.fb_image_preview_url))
-                    .build();
-            AppInviteDialog.show(MapsActivity.this, content);
-        }
     }
 
     private void showLocationSharingDialog() {

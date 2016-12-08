@@ -23,11 +23,4 @@
             android:onClick="onJoinGroupClick" />
     </group>
 
-    <group android:checkableBehavior="none">
-        <item
-            android:id="@+id/nav_invite_app"
-            android:title="@string/invite_app"
-            android:onClick="onInviteToAppClick"/>
-    </group>
-
 </menu>

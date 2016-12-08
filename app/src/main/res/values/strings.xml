@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FindMate</string>
+    <string name="app_name">Moments</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
@@ -19,8 +19,6 @@
     <string name="groups">Groups</string>
     <string name="create_group">Create group</string>
     <string name="join_group">Join group</string>
-
-    <string name="invite_app">Invite new members to app</string>
 
     <string name="group_name">Group name</string>
     <string name="invite_code">Invite code</string>
